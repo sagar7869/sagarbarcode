@@ -2,37 +2,38 @@ const WEBAPP_URL = "https://script.google.com/macros/s/AKfycbxOBuakN8-ajoK30iTxT
 
 document.addEventListener("DOMContentLoaded", ()=>{
 
-    // ---------- TAB SWITCH ----------
+    // TAB SWITCH
     const tabs = document.querySelectorAll(".tabBtn");
     const sections = document.querySelectorAll(".tabSection");
-    sections.forEach(s => s.style.display="none"); // hide all initially
-
+    sections.forEach(s => s.style.display="none"); 
     tabs.forEach(btn=>{
         btn.addEventListener("click", ()=>{
-            sections.forEach(s=>s.style.display="none");  // hide all
-            tabs.forEach(t=>t.classList.remove("activeTab")); // remove active
+            sections.forEach(s=>s.style.display="none");
+            tabs.forEach(t=>t.classList.remove("activeTab"));
             const section = document.getElementById(btn.dataset.tab);
-            section.style.display="block"; // show clicked tab
-            btn.classList.add("activeTab"); // highlight clicked
+            section.style.display="block";
+            btn.classList.add("activeTab");
         });
     });
 
-    // ---------- BARCODE SCANNER ----------
-    let barcodeData = [], qrData = [], qrScanner, beep = new Audio("https://www.soundjay.com/button/beep-07.wav");
+    // SCANNER & DATA
+    let barcodeData=[], qrData=[], scanner;
+    const beep = new Audio("https://www.soundjay.com/button/beep-07.wav");
 
+    // ---------- BARCODE ----------
     document.getElementById("startScan").addEventListener("click", ()=>{
-        qrScanner = new Html5Qrcode("reader");
-        qrScanner.start({facingMode:"environment"},{fps:10, qrbox:250}, code=>{
-            qrScanner.stop().then(()=>{
+        scanner = new Html5Qrcode("reader");
+        scanner.start({facingMode:"environment"},{fps:10, qrbox:250}, code=>{
+            scanner.stop().then(()=>{
                 beep.play();
                 showBarcodeFields(code);
             });
         }).catch(err=>alert("Camera error: "+err));
     });
-    document.getElementById("stopScan").addEventListener("click", ()=>{ if(qrScanner) qrScanner.stop(); });
+    document.getElementById("stopScan").addEventListener("click", ()=>{ if(scanner) scanner.stop(); });
 
     function showBarcodeFields(serial){
-        const f = document.getElementById("entryFields");
+        const f=document.getElementById("entryFields");
         f.style.display="block";
         document.getElementById("barcode").value = serial;
         document.getElementById("barcode").style.border="2px solid green";
@@ -41,9 +42,7 @@ document.addEventListener("DOMContentLoaded", ()=>{
         document.getElementById("datetime").value = new Date().toLocaleString("en-GB");
     }
 
-    document.getElementById("retryBtn").addEventListener("click", ()=>{
-        document.getElementById("entryFields").style.display="none";
-    });
+    document.getElementById("retryBtn").addEventListener("click", ()=>{ document.getElementById("entryFields").style.display="none"; });
 
     document.getElementById("submitBtn").addEventListener("click", ()=>{
         const barcode=document.getElementById("barcode").value;
@@ -54,9 +53,9 @@ document.addEventListener("DOMContentLoaded", ()=>{
         const entry={barcode,photo,remark,datetime};
         barcodeData.push(entry);
         updateTable();
+        // Google Sheet
         fetch(WEBAPP_URL,{method:"POST",body:JSON.stringify(entry)})
-        .then(res=>res.json())
-        .then(r=>alert("Data updated on Google Sheet ✅"))
+        .then(res=>res.json()).then(r=>alert("Data updated on Google Sheet ✅"))
         .catch(e=>alert("Google Sheet error"));
     });
 
@@ -91,17 +90,17 @@ document.addEventListener("DOMContentLoaded", ()=>{
         const a=document.createElement("a"); a.href=URL.createObjectURL(blob); a.download="Barcode_Data.csv"; a.click();
     });
 
-    // ---------- QR SCANNER ----------
-    let qrScanner2;
+    // ---------- QR ----------
+    let qrScanner;
     document.getElementById("startQR").addEventListener("click", ()=>{
-        qrScanner2 = new Html5Qrcode("qr-reader");
-        qrScanner2.start({facingMode:"environment"},{fps:10, qrbox:250}, code=>{
+        qrScanner = new Html5Qrcode("qr-reader");
+        qrScanner.start({facingMode:"environment"},{fps:10, qrbox:250}, code=>{
             document.getElementById("qrField").value = code;
-            qrScanner2.stop();
+            qrScanner.stop();
             updateQRCount();
         }).catch(err=>alert("QR camera error"));
     });
-    document.getElementById("stopQR").addEventListener("click", ()=>{ if(qrScanner2) qrScanner2.stop(); });
+    document.getElementById("stopQR").addEventListener("click", ()=>{ if(qrScanner) qrScanner.stop(); });
 
     document.getElementById("copyQR").addEventListener("click", ()=>{
         const val=document.getElementById("qrField").value;
