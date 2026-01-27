@@ -3,13 +3,16 @@ const WEBAPP_URL = "https://script.google.com/macros/s/AKfycbxOBuakN8-ajoK30iTxT
 // ---------- TAB SWITCH ----------
 const tabs = document.querySelectorAll(".tabBtn");
 const sections = document.querySelectorAll(".tabSection");
+sections.forEach(s => s.style.display="none"); // hide all initially
+
 tabs.forEach(btn=>{
     btn.addEventListener("click", ()=>{
-        sections.forEach(s=>s.classList.remove("active"));
-        document.getElementById(btn.dataset.tab).classList.add("active");
+        sections.forEach(s=>s.style.display="none");
+        tabs.forEach(t=>t.classList.remove("activeTab"));
+        document.getElementById(btn.dataset.tab).style.display="block";
+        btn.classList.add("activeTab");
     });
 });
-sections[0].classList.add("active"); // show Barcode tab by default
 
 // ---------- BARCODE SCANNER ----------
 let barcodeData = [], qrData = [], qrScanner, beep = new Audio("https://www.soundjay.com/button/beep-07.wav");
