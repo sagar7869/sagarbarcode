@@ -1,14 +1,19 @@
-body { font-family: Arial, sans-serif; margin:0; padding:0; background:#f0f4f8; color:#333; }
-header, footer { background:#ff5722; color:white; text-align:center; padding:10px 0; }
-nav { display:flex; justify-content:center; gap:10px; margin:15px 0; }
-.tabBtn { padding:8px 15px; background:#ff9800; color:white; border:none; border-radius:5px; cursor:pointer; font-weight:bold; }
-.tabBtn.activeTab { background:#e65100; }
-.tabSection { display:none; background:white; margin:10px auto; padding:15px; max-width:500px; border-radius:10px; }
-.card { background:#fff; padding:15px; margin:10px 0; border-radius:10px; box-shadow:0 2px 6px rgba(0,0,0,.15); }
-.headerCard { display:flex; justify-content:space-between; background:#ffccbc; }
-.scanCount { font-weight:bold; color:#bf360c; }
-input, textarea, button { width:100%; margin:6px 0; padding:8px; }
-button { background:#ff9800; color:white; border:none; border-radius:5px; font-weight:bold; }
-#table { width:100%; border-collapse:collapse; margin-top:10px; }
-#table th,#table td { border:1px solid #ccc; padding:6px; font-size:13px; }
-.actions { display:flex; gap:5px; flex-wrap:wrap; }
+body{margin:0;font-family:Arial;background:#f2f5f9}
+header,footer{background:#ff5722;color:#fff;text-align:center;padding:10px}
+nav{display:flex;justify-content:center;gap:10px;margin:10px}
+.tabBtn{padding:8px 16px;border:none;border-radius:6px;
+background:#ff9800;color:#fff;font-weight:bold;cursor:pointer}
+.activeTab{background:#e65100}
+.tabSection{max-width:520px;margin:auto}
+.card{background:#fff;padding:15px;border-radius:10px;
+box-shadow:0 2px 8px rgba(0,0,0,.2);margin:10px}
+.headerCard{display:flex;justify-content:space-between;background:#ffe0b2}
+.scanCount{font-weight:bold;color:#bf360c}
+input,textarea,button{width:100%;padding:8px;margin:6px 0;
+border-radius:5px;border:1px solid #ccc}
+button{background:#ff9800;color:#fff;font-weight:bold;border:none}
+button:hover{background:#f57c00}
+#table{width:100%;border-collapse:collapse}
+#table th,#table td{border:1px solid #ccc;padding:6px;font-size:13px}
+.actions{display:flex;flex-wrap:wrap;gap:6px}
+#reader,#qr-reader{margin-top:10px}
