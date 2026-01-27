@@ -117,7 +117,7 @@ button:hover {
   flex-wrap: wrap;
 }
 
-/* CAMERA PREVIEW + BUTTONS */
+/* ---------- CAMERA PREVIEW + BUTTONS ---------- */
 .cameraCard {
   display: flex;
   flex-direction: column;
@@ -127,8 +127,8 @@ button:hover {
 
 .cameraPreview {
   width: 100%;
-  max-width: 300px;   /* compact */
-  height: 120px;
+  max-width: 400px;   /* thoda bada */
+  height: 200px;      /* thoda bada */
   border-radius: 10px;
   margin-bottom: 5px;
   object-fit: cover;
@@ -146,7 +146,7 @@ button:hover {
   justify-content: center;
   gap: 10px;
   width: 100%;
-  max-width: 300px;
+  max-width: 400px;  /* match camera width */
   margin-bottom: 5px;
 }
 
