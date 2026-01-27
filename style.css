@@ -72,6 +72,7 @@ nav {
 .scanCount {
   font-size: 16px;
   color: #bf360c;
+  margin-bottom: 8px;
 }
 
 input, textarea, button {
@@ -116,30 +117,33 @@ button:hover {
   flex-wrap: wrap;
 }
 
-#reader, #qr-reader {
-  width: 100%;
-  margin-top: 10px;
-}
-
 /* ---------- CAMERA PREVIEW ---------- */
 .cameraPreview {
   width: 100%;
-  max-width: 400px;       /* camera box max width */
-  height: 160px;          /* chhota camera box */
-  max-height: 200px;      
-  margin: 0 auto 5px auto; /* center + bottom margin */
+  max-width: 350px;    /* camera preview chhota */
+  height: 120px;       /* height chhota */
+  max-height: 150px;
+  margin: 0 auto 8px auto;
   border: 1px solid #ccc;
   border-radius: 10px;
-  object-fit: cover;      /* camera content fit properly */
+  object-fit: cover;
 }
 
+/* CAMERA + BUTTONS WRAPPER */
 .cameraCard {
   margin-bottom: 10px;
 }
 
-/* ---------- START/STOP BUTTONS ---------- */
-.scanButtons button.smallBtn {
-  width: 48%;
+/* START / STOP BUTTONS */
+.scanButtons {
+  display: flex;
+  justify-content: space-between;
+  gap: 5px;
+  margin-bottom: 8px;
+}
+
+.scanButtons button {
+  flex: 1;
   padding: 6px;
   font-size: 14px;
 }
