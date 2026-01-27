@@ -53,7 +53,6 @@ document.addEventListener("DOMContentLoaded", ()=>{
         const entry={barcode,photo,remark,datetime};
         barcodeData.push(entry);
         updateTable();
-        // Google Sheet
         fetch(WEBAPP_URL,{method:"POST",body:JSON.stringify(entry)})
         .then(res=>res.json()).then(r=>alert("Data updated on Google Sheet ✅"))
         .catch(e=>alert("Google Sheet error"));
