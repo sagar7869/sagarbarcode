@@ -117,7 +117,7 @@ button:hover {
   flex-wrap: wrap;
 }
 
-/* ---------- CAMERA PREVIEW ---------- */
+/* CAMERA PREVIEW + BUTTONS */
 .cameraCard {
   display: flex;
   flex-direction: column;
@@ -127,25 +127,23 @@ button:hover {
 
 .cameraPreview {
   width: 100%;
-  max-width: 300px;   /* chhota width */
-  height: 120px;       /* chhota height */
+  max-width: 300px;   /* compact */
+  height: 120px;
   border-radius: 10px;
   margin-bottom: 5px;
   object-fit: cover;
-  border: 1px solid #ccc; /* clean border */
+  border: 1px solid #ccc;
 }
 
-/* Make video fit inside the div */
 .cameraPreview video {
   width: 100% !important;
   height: 100% !important;
   object-fit: cover;
 }
 
-/* START / STOP BUTTONS */
 .scanButtons {
   display: flex;
-  justify-content: center; /* center buttons */
+  justify-content: center;
   gap: 10px;
   width: 100%;
   max-width: 300px;
@@ -154,7 +152,7 @@ button:hover {
 
 .scanButtons button {
   flex: 1;
-  padding: 5px;      /* small button */
+  padding: 5px;
   font-size: 13px;
 }
 
