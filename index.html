@@ -14,11 +14,11 @@
 </header>
 
 <nav>
-  <button class="tabBtn" data-tab="barcodeTab">Barcode</button>
+  <button class="tabBtn activeTab" data-tab="barcodeTab">Barcode</button>
   <button class="tabBtn" data-tab="qrTab">QR Code</button>
 </nav>
 
-<section id="barcodeTab" class="tabSection">
+<section id="barcodeTab" class="tabSection" style="display:block">
   <div class="card headerCard">
     <strong>Barcode Scanner</strong>
     <div class="scanCount">Total Scans: <span id="totalCount">0</span></div>
@@ -47,22 +47,22 @@
   </table>
 
   <div class="actions">
-    <button id="copyBtn">Copy Table</button>
+    <button id="copyBtn">Copy</button>
     <button id="saveLocalBtn">Save Local</button>
     <button id="exportBtn">Export CSV</button>
-    <button id="syncBtn">Sync Pending to Google Sheet</button>
+    <button id="syncBtn">Sync Google Sheet</button>
   </div>
 </section>
 
 <section id="qrTab" class="tabSection">
   <div class="card headerCard">
-    <strong>QR Code Scanner</strong>
-    <div class="scanCount">Total QR Scans: <span id="totalQRCount">0</span></div>
+    <strong>QR Scanner</strong>
+    <div class="scanCount">Total QR: <span id="totalQRCount">0</span></div>
   </div>
 
   <div class="card">
-    <button id="startQR">Start QR Scan</button>
-    <button id="stopQR">Stop QR Scan</button>
+    <button id="startQR">Start QR</button>
+    <button id="stopQR">Stop QR</button>
     <div id="qr-reader"></div>
     <input id="qrField" readonly placeholder="QR Data">
   </div>
