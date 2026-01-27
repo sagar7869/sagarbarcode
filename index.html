@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>SagarBarcode Scanner</title>
+<script src="https://unpkg.com/@zxing/library@latest"></script>
+<style>
+body{font-family:Arial;background:#0f172a;color:#fff;margin:0}
+header{padding:15px;text-align:center;background:#020617}
+button{padding:10px 15px;border:none;border-radius:6px;font-size:16px;margin:3px;}
+#scanner{width:100%;max-height:320px;background:#000}
+.card{background:#020617;margin:10px;padding:12px;border-radius:8px}
+input,textarea{width:100%;padding:8px;margin-top:6px;border-radius:5px;border:none}
+.green{background:#16a34a}
+.red{background:#dc2626}
+.gray{background:#334155}
+footer{text-align:center;font-size:12px;opacity:.7;margin:15px}
+</style>
+</head>
+
+<body>
+
+<header>
+<h2>SagarBarcode Scanner</h2>
+<p>Today Scan: <span id="todayCount">0</span></p>
+</header>
+
+<video id="scanner"></video>
+
+<div class="card">
+<button class="green" onclick="startScan()">Start Scan</button>
+<button class="gray" onclick="toggleFlash()">Flash</button>
+</div>
+
+<div class="card" id="formCard" style="display:none">
+<h3>Scan Details</h3>
+<label>Module SR No</label>
+<input id="srno"/>
+<label>Image No</label>
+<input id="imgno"/>
+<label>Remark</label>
+<textarea id="remark"></textarea>
+<label>Date & Time</label>
+<input id="datetime" readonly/>
+<br><br>
+<button class="green" onclick="saveGoogle()">Save to Google Sheet</button>
+<button class="gray" onclick="saveLocal()">Save Local</button>
+<button class="red" onclick="resetScan()">Retry Scan</button>
+</div>
+
+<div class="card">
+<h3>Recent Scans</h3>
+<ul id="history"></ul>
+<button class="gray" onclick="exportData()">Export</button>
+<button class="red" onclick="clearLocal()">Clear Local</button>
+</div>
+
+<footer>Designed by – Sagar Herole</footer>
+
+<script>
+const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbxOBuakN8-ajoK30iTxTlkvIzgWCOuSLl6Xu4RaiGsiXFFF1xPHgMs_ENIKmjaRrc6f/exec";
+let codeReader = new ZXing.BrowserMultiFormatReader();
+let scannedValue = "";
+let flashOn=false;
+
+function startScan(){
+  codeReader.decodeFromVideoDevice(null,'scanner',(result,err)=>{
+    if(result){
+      scannedValue=result.text;
+      document.getElementById('srno').value=scannedValue;
+      stopScan();
+      openForm();
+      speak("Scan completed");
+    }
+  });
+}
+
+function stopScan(){ codeReader.reset(); }
+
+function openForm(){
+  document.getElementById('formCard').style.display="block";
+  document.getElementById('datetime').value=new Date().toLocaleString();
+}
+
+function resetScan(){
+  document.getElementById('formCard').style.display="none";
+  startScan();
+}
+
+function speak(txt){ let u=new SpeechSynthesisUtterance(txt); speechSynthesis.speak(u); }
+
+function saveGoogle(){
+  let data=getFormData();
+  fetch(WEB_APP_URL,{
+    method:'POST',
+    body:JSON.stringify(data)
+  }).then(()=>alert("Saved to Google Sheet"));
+}
+
+function saveLocal(){
+  let arr=JSON.parse(localStorage.getItem("scans")||"[]");
+  arr.push(getFormData());
+  localStorage.setItem("scans",JSON.stringify(arr));
+  loadHistory();
+}
+
+function getFormData(){
+  return {srno:srno.value,imgno:imgno.value,remark:remark.value,datetime:datetime.value};
+}
+
+function loadHistory(){
+  let arr=JSON.parse(localStorage.getItem("scans")||"[]");
+  document.getElementById("todayCount").innerText=arr.length;
+  history.innerHTML="";
+  arr.slice(-5).reverse().forEach(i=>{
+    let li=document.createElement("li");
+    li.innerText=i.srno+" | "+i.datetime;
+    history.appendChild(li);
+  });
+}
+
+function clearLocal(){ localStorage.clear(); loadHistory(); }
+
+function exportData(){
+  let data=localStorage.getItem("scans");
+  let a=document.createElement("a");
+  a.href="data:text/json,"+encodeURIComponent(data);
+  a.download="scan_backup.json";
+  a.click();
+}
+
+loadHistory();
+
+function toggleFlash(){
+  alert("Flash toggle not supported in browser");
+}
+</script>
+</body>
+</html>
