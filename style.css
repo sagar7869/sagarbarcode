@@ -126,8 +126,8 @@ button:hover {
 }
 
 .cameraPreview {
-  width: 100%;
-  max-width: 400px;   /* thoda bada */
+  width: 400px;
+ /* thoda bada */
   height: 400px;      /* thoda bada */
   border-radius: 15x;
   margin-bottom: 5px;
