@@ -14,11 +14,12 @@
 </header>
 
 <section id="barcode-section">
+  <h2>Barcode Scanner</h2>
   <button id="startScan">Start Scan</button>
-  <div id="reader" style="width:100%; max-width:400px; margin:10px auto;"></div>
+  <div id="reader"></div>
 
   <div id="entryFields" style="display:none;">
-    <input id="barcode" placeholder="Scanned Code" readonly>
+    <input id="barcode" placeholder="Scanned Code">
     <input id="module" placeholder="Module SR No">
     <input id="photo" placeholder="Photo No">
     <textarea id="remark" placeholder="Remark"></textarea>
@@ -40,7 +41,9 @@
 
 <section id="qr-section">
   <h2>QR Code Scanner</h2>
-  <input id="qrField" placeholder="Scan QR Code Here">
+  <button id="startQR">Start QR Scan</button>
+  <div id="qr-reader"></div>
+  <input id="qrField" placeholder="QR Data" readonly>
   <button id="copyQR">Copy</button>
   <button id="saveQR">Save Local</button>
   <button id="exportQR">Export CSV</button>
