@@ -1,35 +1,41 @@
 // -------- CONFIG --------
-const WEBAPP_URL = "https://script.google.com/macros/s/AKfycbxOBuakN8-ajoK30iTxTlkvIzgWCOuSLl6Xu4RaiGsiXFFF1xPHgMs_ENIKmjaRrc6f/exec"; // ✅ Already set
+const WEBAPP_URL = "https://script.google.com/macros/s/AKfycbxOBuakN8-ajoK30iTxTlkvIzgWCOuSLl6Xu4RaiGsiXFFF1xPHgMs_ENIKmjaRrc6f/exec";
 let localData = [];
 
-// -------- SCANNER SETUP --------
+// -------- BARCODE SCANNER --------
 const qrScanner = new Html5Qrcode("reader");
+
 document.getElementById("startScan").addEventListener("click", () => {
     qrScanner.start(
-      { facingMode: "environment" },
-      { fps: 10, qrbox: 250 },
-      code => {
-        document.getElementById("barcode").value = code;
-        document.getElementById("entryFields").style.display = "block";
-      }
-    );
+        { facingMode: "environment" },
+        { fps: 10, qrbox: 250 },
+        code => {
+            qrScanner.stop().then(()=>console.log("Camera stopped"));
+            document.getElementById("entryFields").style.display = "block";
+            document.getElementById("barcode").value = code; // Editable
+        }
+    ).catch(err=>{
+        alert("Camera error: "+err);
+    });
 });
 
-document.getElementById("retryBtn").addEventListener("click", () => {
+document.getElementById("retryBtn").addEventListener("click", ()=>{
     document.getElementById("barcode").value="";
     document.getElementById("module").value="";
     document.getElementById("photo").value="";
     document.getElementById("remark").value="";
+    document.getElementById("entryFields").style.display="none";
 });
 
 // -------- SUBMIT ENTRY --------
-document.getElementById("submitBtn").addEventListener("click", () => {
+document.getElementById("submitBtn").addEventListener("click", ()=>{
     const barcode = document.getElementById("barcode").value;
     const module = document.getElementById("module").value;
     const photo = document.getElementById("photo").value;
     const remark = document.getElementById("remark").value;
+
     if(!barcode) return alert("Scan a barcode first!");
-    
+
     const now = new Date();
     const date = now.toLocaleDateString("en-GB");
     const datetime = now.toLocaleString("en-GB");
@@ -76,6 +82,21 @@ function updateTable(){
 }
 
 // -------- QR SECTION --------
+let qrScanner2;
+document.getElementById("startQR").addEventListener("click", ()=>{
+    qrScanner2 = new Html5Qrcode("qr-reader");
+    qrScanner2.start(
+        {facingMode:"environment"},
+        {fps:10, qrbox:250},
+        code=>{
+            document.getElementById("qrField").value = code;
+            qrScanner2.stop();
+        }
+    ).catch(err=>{
+        alert("QR camera error: "+err);
+    });
+});
+
 const qrField = document.getElementById("qrField");
 document.getElementById("copyQR").addEventListener("click", ()=> {
     qrField.select();
