@@ -128,7 +128,7 @@ button:hover {
 .cameraPreview {
   width: 200px;
  /* thoda bada */
-  height: 200px;      /* thoda bada */
+  height: 50%;      /* thoda bada */
   border-radius: 15x;
   margin-bottom: 5px;
   object-fit: cover;
