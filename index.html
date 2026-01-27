@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>SagarBarcode</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="manifest" href="manifest.json">
+<script src="https://unpkg.com/html5-qrcode"></script>
+
+<style>
+body{font-family:Arial;margin:0;background:#f4f6f8}
+header{background:#1976d2;color:#fff;padding:12px;text-align:center}
+.section{background:#fff;margin:10px;padding:10px;border-radius:8px}
+.hidden{display:none}
+button{padding:10px;margin:5px 0;width:100%;border:none;border-radius:6px;background:#1976d2;color:#fff}
+button.red{background:#d32f2f}
+button.gray{background:#555}
+input,textarea{width:100%;padding:8px;margin:5px 0}
+table{width:100%;border-collapse:collapse;margin-top:10px}
+th,td{border:1px solid #ccc;font-size:12px;padding:5px;text-align:center}
+.counter{font-weight:bold;margin-top:5px}
+#status{font-size:13px;margin-top:6px}
+footer{text-align:center;font-size:12px;color:#666;margin:10px}
+</style>
+</head>
+
+<body>
+
+<header>
+  <h3>SagarBarcode Scanner</h3>
+</header>
+
+<div class="section">
+  <div id="reader"></div>
+  <button onclick="startScan()">Start Scan</button>
+
+  <div id="form" class="hidden">
+    <input id="barcode" readonly placeholder="Scanned Code">
+    <input id="module" placeholder="Module SR No">
+    <input id="image" placeholder="Photo No">
+    <textarea id="remark" placeholder="Remark"></textarea>
+
+    <button onclick="saveEntry()">Submit</button>
+    <button class="gray" onclick="resetScan()">Retry</button>
+  </div>
+
+  <div id="status"></div>
+  <div class="counter">Total Saved: <span id="total">0</span></div>
+
+  <table id="table">
+    <tr>
+      <th>Code</th>
+      <th>Module</th>
+      <th>Photo</th>
+      <th>Remark</th>
+      <th>Delete</th>
+    </tr>
+  </table>
+</div>
+
+<footer>Design by – Sagar Herole</footer>
+
+<script>
+const SCRIPT_URL =
+"https://script.google.com/macros/s/AKfycbxOBuakN8-ajoK30iTxTlkvIzgWCOuSLl6Xu4RaiGsiXFFF1xPHgMs_ENIKmjaRrc6f/exec";
+
+let scanner;
+let total = 0;
+
+function startScan(){
+  scanner = new Html5Qrcode("reader");
+  scanner.start(
+    { facingMode: "environment" },
+    { fps: 15, qrbox: 250 },
+    code => {
+      barcode.value = code;
+      form.classList.remove("hidden");
+      scanner.stop();
+      speak("Scan completed");
+    }
+  );
+}
+
+function resetScan(){
+  form.classList.add("hidden");
+  barcode.value = "";
+}
+
+function saveEntry(){
+  status.innerText = "Saving...";
+  status.style.color = "black";
+
+  const row = table.insertRow(-1);
+  row.insertCell(0).innerText = barcode.value;
+  row.insertCell(1).innerText = module.value;
+  row.insertCell(2).innerText = image.value;
+  row.insertCell(3).innerText = remark.value;
+
+  const del = row.insertCell(4);
+  const btn = document.createElement("button");
+  btn.innerText = "X";
+  btn.className = "red";
+  btn.onclick = () => {
+    table.deleteRow(row.rowIndex);
+    total--;
+    updateTotal();
+  };
+  del.appendChild(btn);
+
+  total++;
+  updateTotal();
+
+  fetch(SCRIPT_URL,{
+    method:"POST",
+    headers:{ "Content-Type":"application/json" },
+    body:JSON.stringify({
+      module: module.value,
+      image: image.value,
+      remark: remark.value,
+      date: new Date().toLocaleDateString("en-GB"),
+      datetime: new Date().toLocaleString("en-GB")
+    })
+  })
+  .then(r=>r.json())
+  .then(res=>{
+    if(res.status==="success"){
+      status.style.color="green";
+      status.innerText="Saved to Google Sheet ✅";
+    }else{
+      status.style.color="red";
+      status.innerText="ERROR: "+res.message;
+    }
+  })
+  .catch(err=>{
+    status.style.color="red";
+    status.innerText="NETWORK ERROR: "+err;
+  });
+
+  resetScan();
+}
+
+function updateTotal(){
+  totalSpan = document.getElementById("total");
+  totalSpan.innerText = total;
+}
+
+function speak(text){
+  const u = new SpeechSynthesisUtterance(text);
+  speechSynthesis.speak(u);
+}
+</script>
+
+</body>
+</html>
