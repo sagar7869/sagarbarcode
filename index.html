@@ -1,72 +1,24 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>SagarBarcode PWA</title>
-<link rel="stylesheet" href="style.css">
-<script src="https://unpkg.com/html5-qrcode"></script>
-</head>
-<body>
+body { font-family: Arial, sans-serif; margin:0; padding:0; background:#f5f5f5; color:#333; }
+header, footer { background:#1976d2; color:white; text-align:center; padding:10px 0; }
+h1,h2 { margin:0; }
+nav { display:flex; justify-content:center; gap:10px; margin:10px 0; }
+.tabBtn { padding:8px 15px; background:#1976d2; color:white; border:none; border-radius:5px; cursor:pointer; }
+.tabBtn:hover { background:#0d47a1; }
+.tabSection { display:none; background:white; margin:10px auto; padding:15px; max-width:500px; border-radius:10px; box-shadow:0 2px 8px rgba(0,0,0,0.2); }
+.tabSection.active { display:block; }
 
-<header>
-  <h1>SagarBarcode Scanner</h1>
-</header>
+input, textarea, button { width:100%; margin:5px 0; padding:8px; border-radius:5px; border:1px solid #ccc; font-size:14px; }
+button { cursor:pointer; background:#1976d2; color:white; border:none; }
+button:hover { background:#0d47a1; }
 
-<nav>
-  <button class="tabBtn" data-tab="barcodeTab">Barcode</button>
-  <button class="tabBtn" data-tab="qrTab">QR Code</button>
-</nav>
+.card { background:white; border-radius:10px; padding:10px 15px; margin:10px 0; box-shadow:0 2px 6px rgba(0,0,0,0.1); }
+.info { display:flex; justify-content:space-between; align-items:center; font-weight:bold; }
 
-<!-- BARCODE TAB -->
-<section id="barcodeTab" class="tabSection">
-  <h2>Barcode Scanner</h2>
-  <div class="card">
-    <button id="startScan">Start Scan</button>
-    <button id="stopScan">Stop Scan</button>
-    <div id="reader"></div>
-    <div id="entryFields" style="display:none;">
-      <input id="barcode" placeholder="Serial Number">
-      <input id="photo" placeholder="Photo Number">
-      <textarea id="remark" placeholder="Remark"></textarea>
-      <input id="datetime" readonly>
-      <button id="submitBtn">Submit</button>
-      <button id="retryBtn">Retry</button>
-    </div>
-  </div>
-  <div class="card info">
-    <strong>Total Scans:</strong> <span id="totalCount">0</span>
-  </div>
-  <table id="table">
-    <tr><th>Serial</th><th>Photo</th><th>Remark</th><th>Date & Time</th><th>Delete</th></tr>
-  </table>
-  <div class="actions">
-    <button id="copyBtn">Copy Table</button>
-    <button id="saveLocalBtn">Save Local</button>
-    <button id="exportBtn">Export CSV</button>
-  </div>
-</section>
+#table { width:100%; border-collapse: collapse; margin-top:10px; }
+#table th, #table td { border:1px solid #ccc; padding:6px; text-align:center; }
 
-<!-- QR TAB -->
-<section id="qrTab" class="tabSection" style="display:none;">
-  <h2>QR Code Scanner</h2>
-  <div class="card">
-    <button id="startQR">Start QR Scan</button>
-    <button id="stopQR">Stop QR Scan</button>
-    <div id="qr-reader"></div>
-    <input id="qrField" readonly placeholder="QR Data">
-  </div>
-  <div class="card info">
-    <strong>Total QR Scans:</strong> <span id="totalQRCount">0</span>
-  </div>
-  <div class="actions">
-    <button id="copyQR">Copy</button>
-    <button id="saveQR">Save Local</button>
-    <button id="exportQR">Export CSV</button>
-  </div>
-</section>
+.actions { display:flex; justify-content:space-between; gap:5px; margin-top:10px; flex-wrap:wrap; }
 
-<footer>Design by – Sagar Herole</footer>
-<script src="app.js"></script>
-</body>
-</html>
+#reader, #qr-reader { width:100%; margin-top:10px; }
+
+footer { margin-top:20px; }
