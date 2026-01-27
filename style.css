@@ -1,153 +1,53 @@
-/* ==================== Base ==================== */
 body {
   font-family: Arial, sans-serif;
-  margin: 0;
-  padding: 0;
-  background: #f0f4f8;
-  color: #333;
+  margin:0; padding:0;
+  background:#f0f4f8; color:#333;
 }
 
 header, footer {
-  background: #ff5722;
-  color: white;
-  text-align: center;
-  padding: 10px 0;
+  background:#ff5722; color:white; text-align:center; padding:10px 0;
 }
+header h1, footer {margin:0;}
 
-header h1, footer {
-  margin: 0;
-}
-
-/* ==================== Tabs ==================== */
 nav {
-  display: flex;
-  justify-content: center;
-  gap: 10px;
-  margin: 15px 0;
+  display:flex; justify-content:center; gap:10px; margin:15px 0;
 }
-
 .tabBtn {
-  padding: 8px 15px;
-  background: #ff9800;
-  color: white;
-  border: none;
-  border-radius: 5px;
-  cursor: pointer;
-  font-weight: bold;
-  transition: 0.3s;
+  padding:8px 15px; background:#ff9800; color:white; border:none;
+  border-radius:5px; cursor:pointer; font-weight:bold; transition:0.3s;
 }
+.tabBtn:hover {background:#f57c00;}
+.tabBtn.activeTab {background:#e65100;}
 
-.tabBtn:hover {
-  background: #f57c00;
-}
-
-.tabBtn.activeTab {
-  background: #e65100;
-}
-
-/* ==================== Sections ==================== */
 .tabSection {
-  display: none;
-  background: white;
-  margin: 10px auto;
-  padding: 15px;
-  max-width: 500px;
-  border-radius: 10px;
-  box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+  display:none; background:white; margin:10px auto; padding:15px;
+  max-width:500px; border-radius:10px; box-shadow:0 2px 10px rgba(0,0,0,0.2);
 }
 
 .card {
-  background: #ffffff;
-  border-radius: 10px;
-  padding: 15px;
-  margin: 10px 0;
-  box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+  background:#fff; border-radius:10px; padding:15px; margin:10px 0;
+  box-shadow:0 2px 6px rgba(0,0,0,0.15);
 }
 
-.headerCard {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  background: #ffccbc;
-  font-weight: bold;
-}
+.headerCard {display:flex; justify-content:space-between; align-items:center; background:#ffccbc; font-weight:bold;}
+.scanCount { font-size:16px; color:#bf360c; }
 
-.scanCount {
-  font-size: 16px;
-  color: #bf360c;
-}
-
-/* ==================== Inputs & Buttons ==================== */
 input, textarea, button {
-  width: 100%;
-  margin: 6px 0;
-  padding: 8px;
-  border-radius: 5px;
-  border: 1px solid #ccc;
-  font-size: 14px;
+  width:100%; margin:6px 0; padding:8px; border-radius:5px; border:1px solid #ccc; font-size:14px;
 }
+button { background:#ff9800; color:white; font-weight:bold; border:none; transition:0.3s; }
+button:hover { background:#f57c00; }
 
-button {
-  background: #ff9800;
-  color: white;
-  font-weight: bold;
-  border: none;
-  transition: 0.3s;
-}
+#table { width:100%; border-collapse: collapse; margin-top:10px;}
+#table th, #table td { border:1px solid #ccc; padding:6px; text-align:center; font-size:13px;}
 
-button:hover {
-  background: #f57c00;
-}
+.actions { display:flex; justify-content:space-between; gap:5px; margin-top:10px; flex-wrap:wrap;}
 
-/* ==================== Table ==================== */
-#table {
-  width: 100%;
-  border-collapse: collapse;
-  margin-top: 10px;
-}
+#reader, #qr-reader { width:100%; margin-top:10px;}
 
-#table th, #table td {
-  border: 1px solid #ccc;
-  padding: 6px;
-  text-align: center;
-  font-size: 13px;
+#ocrSlot button, #startOCR, #stopOCR {
+  background:#4caf50; color:white; margin-top:6px; width:100%; border-radius:5px; font-weight:bold;
 }
+#ocrSlot button:hover, #startOCR:hover, #stopOCR:hover {background:#388e3c;}
 
-/* ==================== Actions ==================== */
-.actions {
-  display: flex;
-  justify-content: space-between;
-  gap: 5px;
-  margin-top: 10px;
-  flex-wrap: wrap;
-}
-
-/* ==================== Camera & OCR ==================== */
-#reader, #qr-reader {
-  width: 100%;
-  margin-top: 10px;
-}
-
-#cameraTop video {
-  width: 100%;
-}
-
-#ocrSlot button {
-  background: #4caf50;
-  color: white;
-  margin-top: 6px;
-  width: 100%;
-  border-radius: 5px;
-  font-weight: bold;
-}
-
-#ocrSlot button:hover {
-  background: #388e3c;
-}
-
-/* ==================== Footer ==================== */
-footer {
-  margin-top: 15px;
-  font-size: 13px;
-  text-align: center;
-}
+footer { margin-top:15px; font-size:13px; text-align:center;}
