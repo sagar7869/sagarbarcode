@@ -18,21 +18,19 @@
   <button class="tabBtn" data-tab="qrTab">QR Code</button>
 </nav>
 
-<!-- BARCODE SECTION -->
 <section id="barcodeTab" class="tabSection">
+  <div class="card headerCard">
+    <strong>Barcode Scanner</strong>
+    <div class="scanCount">Total Scans: <span id="totalCount">0</span></div>
+  </div>
 
-  <!-- CAMERA PREVIEW -->
   <div class="card cameraCard">
     <div id="reader" class="cameraPreview"></div>
     <div class="scanButtons">
       <button id="startScan">Start Scan</button>
       <button id="stopScan">Stop Scan</button>
     </div>
-    <div class="scanCount">Total Scans: <span id="totalCount">0</span></div>
-  </div>
 
-  <!-- ENTRY FIELDS -->
-  <div class="card">
     <div id="entryFields" style="display:none;">
       <input id="barcode" placeholder="Serial Number">
       <input id="photo" placeholder="Photo Number">
@@ -43,10 +41,10 @@
     </div>
   </div>
 
-  <!-- TABLE -->
   <table id="table">
     <tr><th>Serial</th><th>Photo</th><th>Remark</th><th>Date & Time</th><th>Delete</th></tr>
   </table>
+
   <div class="actions">
     <button id="copyBtn">Copy Table</button>
     <button id="saveLocalBtn">Save Local</button>
@@ -55,18 +53,18 @@
   </div>
 </section>
 
-<!-- QR CODE SECTION -->
 <section id="qrTab" class="tabSection">
+  <div class="card headerCard">
+    <strong>QR Code Scanner</strong>
+    <div class="scanCount">Total QR Scans: <span id="totalQRCount">0</span></div>
+  </div>
+
   <div class="card cameraCard">
     <div id="qr-reader" class="cameraPreview"></div>
     <div class="scanButtons">
       <button id="startQR">Start QR Scan</button>
       <button id="stopQR">Stop QR Scan</button>
     </div>
-    <div class="scanCount">Total QR Scans: <span id="totalQRCount">0</span></div>
-  </div>
-
-  <div class="card">
     <input id="qrField" readonly placeholder="QR Data">
   </div>
 
