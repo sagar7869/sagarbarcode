@@ -21,21 +21,14 @@
 <!-- BARCODE SECTION -->
 <section id="barcodeTab" class="tabSection">
 
-  <!-- CAMERA PREVIEW TOP -->
+  <!-- CAMERA PREVIEW -->
   <div class="card cameraCard">
     <div id="reader" class="cameraPreview"></div>
-  </div>
-
-  <!-- SCAN COUNT BELOW CAMERA -->
-  <div class="card headerCard">
-    <strong>Barcode Scanner</strong>
+    <div class="scanButtons">
+      <button id="startScan">Start Scan</button>
+      <button id="stopScan">Stop Scan</button>
+    </div>
     <div class="scanCount">Total Scans: <span id="totalCount">0</span></div>
-  </div>
-
-  <!-- START / STOP BUTTONS BELOW SCAN COUNT -->
-  <div class="card scanButtons">
-    <button id="startScan" class="smallBtn">Start Scan</button>
-    <button id="stopScan" class="smallBtn">Stop Scan</button>
   </div>
 
   <!-- ENTRY FIELDS -->
@@ -50,7 +43,7 @@
     </div>
   </div>
 
-  <!-- TABLE AND ACTIONS -->
+  <!-- TABLE -->
   <table id="table">
     <tr><th>Serial</th><th>Photo</th><th>Remark</th><th>Date & Time</th><th>Delete</th></tr>
   </table>
@@ -64,30 +57,19 @@
 
 <!-- QR CODE SECTION -->
 <section id="qrTab" class="tabSection">
-
-  <!-- CAMERA PREVIEW TOP -->
   <div class="card cameraCard">
     <div id="qr-reader" class="cameraPreview"></div>
-  </div>
-
-  <!-- SCAN COUNT BELOW CAMERA -->
-  <div class="card headerCard">
-    <strong>QR Code Scanner</strong>
+    <div class="scanButtons">
+      <button id="startQR">Start QR Scan</button>
+      <button id="stopQR">Stop QR Scan</button>
+    </div>
     <div class="scanCount">Total QR Scans: <span id="totalQRCount">0</span></div>
   </div>
 
-  <!-- START / STOP BUTTONS BELOW SCAN COUNT -->
-  <div class="card scanButtons">
-    <button id="startQR" class="smallBtn">Start QR Scan</button>
-    <button id="stopQR" class="smallBtn">Stop QR Scan</button>
-  </div>
-
-  <!-- QR DATA FIELD -->
   <div class="card">
     <input id="qrField" readonly placeholder="QR Data">
   </div>
 
-  <!-- QR ACTIONS -->
   <div class="actions">
     <button id="copyQR">Copy</button>
     <button id="saveQR">Save Local</button>
