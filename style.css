@@ -116,9 +116,23 @@ button:hover {
   flex-wrap: wrap;
 }
 
-#reader, #qr-reader {
+.cameraPreview {
   width: 100%;
-  margin-top: 10px;
+  height: 200px; /* thoda chhota camera */
+  margin-bottom: 5px;
+  border: 1px solid #ccc;
+  border-radius: 10px;
+}
+
+.smallBtn {
+  padding: 5px 10px;
+  font-size: 13px;
+  width: 48%;
+  margin-right: 2%;
+}
+
+.scanButtons button:last-child {
+  margin-right: 0;
 }
 
 footer {
