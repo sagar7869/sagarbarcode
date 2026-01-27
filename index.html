@@ -14,11 +14,11 @@
 </header>
 
 <nav>
-  <button class="tabBtn activeTab" data-tab="barcodeTab">Barcode</button>
+  <button class="tabBtn" data-tab="barcodeTab">Barcode</button>
   <button class="tabBtn" data-tab="qrTab">QR Code</button>
 </nav>
 
-<section id="barcodeTab" class="tabSection" style="display:block">
+<section id="barcodeTab" class="tabSection">
   <div class="card headerCard">
     <strong>Barcode Scanner</strong>
     <div class="scanCount">Total Scans: <span id="totalCount">0</span></div>
@@ -27,6 +27,7 @@
   <div class="card">
     <button id="startScan">Start Scan</button>
     <button id="stopScan">Stop Scan</button>
+
     <div id="reader"></div>
 
     <div id="entryFields" style="display:none;">
@@ -34,6 +35,7 @@
       <input id="photo" placeholder="Photo Number">
       <textarea id="remark" placeholder="Remark"></textarea>
       <input id="datetime" readonly>
+
       <button id="submitBtn">Submit</button>
       <button id="retryBtn">Retry</button>
     </div>
@@ -41,28 +43,31 @@
 
   <table id="table">
     <tr>
-      <th>Serial</th><th>Photo</th><th>Remark</th>
-      <th>Date & Time</th><th>Delete</th>
+      <th>Serial</th>
+      <th>Photo</th>
+      <th>Remark</th>
+      <th>Date & Time</th>
+      <th>Delete</th>
     </tr>
   </table>
 
   <div class="actions">
-    <button id="copyBtn">Copy</button>
+    <button id="copyBtn">Copy Table</button>
     <button id="saveLocalBtn">Save Local</button>
     <button id="exportBtn">Export CSV</button>
-    <button id="syncBtn">Sync Google Sheet</button>
   </div>
 </section>
 
 <section id="qrTab" class="tabSection">
   <div class="card headerCard">
-    <strong>QR Scanner</strong>
-    <div class="scanCount">Total QR: <span id="totalQRCount">0</span></div>
+    <strong>QR Code Scanner</strong>
+    <div class="scanCount">Total QR Scans: <span id="totalQRCount">0</span></div>
   </div>
 
   <div class="card">
-    <button id="startQR">Start QR</button>
-    <button id="stopQR">Stop QR</button>
+    <button id="startQR">Start QR Scan</button>
+    <button id="stopQR">Stop QR Scan</button>
+
     <div id="qr-reader"></div>
     <input id="qrField" readonly placeholder="QR Data">
   </div>
@@ -75,6 +80,7 @@
 </section>
 
 <footer>Design by – Sagar Herole</footer>
+
 <script src="app.js"></script>
 </body>
 </html>
