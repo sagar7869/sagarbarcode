@@ -123,21 +123,19 @@ button:hover {
   flex-direction: column;
   align-items: center;
   margin-bottom: 10px;
-  overflow: hidden; /* camera overflow hide */
 }
 
 .cameraPreview {
   width: 100%;
-  max-width: 300px;   /* compact width */
-  height: 120px;      /* compact height */
-  max-height: 150px;
-  border: 1px solid #ccc;
+  max-width: 300px;   /* chhota width */
+  height: 120px;       /* chhota height */
   border-radius: 10px;
   margin-bottom: 5px;
-  position: relative;
+  object-fit: cover;
+  border: 1px solid #ccc; /* clean border */
 }
 
-/* Video canvas fit inside the div */
+/* Make video fit inside the div */
 .cameraPreview video {
   width: 100% !important;
   height: 100% !important;
@@ -147,8 +145,8 @@ button:hover {
 /* START / STOP BUTTONS */
 .scanButtons {
   display: flex;
-  justify-content: space-between;
-  gap: 5px;
+  justify-content: center; /* center buttons */
+  gap: 10px;
   width: 100%;
   max-width: 300px;
   margin-bottom: 5px;
