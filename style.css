@@ -72,7 +72,7 @@ nav {
 .scanCount {
   font-size: 16px;
   color: #bf360c;
-  margin-bottom: 8px;
+  margin-top: 5px;
 }
 
 input, textarea, button {
@@ -120,10 +120,10 @@ button:hover {
 /* ---------- CAMERA PREVIEW ---------- */
 .cameraPreview {
   width: 100%;
-  max-width: 350px;    /* camera preview chhota */
-  height: 120px;       /* height chhota */
-  max-height: 150px;
-  margin: 0 auto 8px auto;
+  max-width: 300px;   /* compact width */
+  height: 100px;      /* compact height */
+  max-height: 120px;
+  margin: 0 auto 5px auto;
   border: 1px solid #ccc;
   border-radius: 10px;
   object-fit: cover;
@@ -139,13 +139,13 @@ button:hover {
   display: flex;
   justify-content: space-between;
   gap: 5px;
-  margin-bottom: 8px;
+  margin-bottom: 5px;
 }
 
 .scanButtons button {
   flex: 1;
-  padding: 6px;
-  font-size: 14px;
+  padding: 5px;      /* small button */
+  font-size: 13px;
 }
 
 footer {
