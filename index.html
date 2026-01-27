@@ -9,6 +9,9 @@
 <script src="app.js" defer></script>
 </head>
 <body>
+
+<h2>Barcode & QR Scanner</h2>
+
 <div class="tabs">
   <button id="barcodeTab" class="tab-btn active">Barcode</button>
   <button id="qrTab" class="tab-btn">QR Code</button>
@@ -16,6 +19,7 @@
 
 <div id="barcodeSection" class="section active">
   <div id="reader-barcode" class="scanner"></div>
+
   <div id="entryFields" class="entry-fields" style="display:none">
     <input id="barcode" placeholder="Serial Number" readonly>
     <input id="photo" placeholder="Photo Number">
@@ -23,9 +27,11 @@
     <input id="datetime" readonly>
     <button id="submitBtn">Submit</button>
   </div>
+
   <button id="pushToSheetBtn">Push Unsent to Google Sheet</button>
   <div id="sheetStatus"></div>
   <div id="scanCount">Total Scans: 0</div>
+
   <table id="barcodeTable">
     <tr><th>Serial</th><th>Photo</th><th>Remark</th><th>Date/Time</th></tr>
   </table>
@@ -37,5 +43,6 @@
   <button id="copyQrBtn">Copy</button>
   <button id="exportQrBtn">Export CSV</button>
 </div>
+
 </body>
 </html>
