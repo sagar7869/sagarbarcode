@@ -18,22 +18,28 @@
   <button class="tabBtn" data-tab="qrTab">QR Code</button>
 </nav>
 
-<!-- ---------------- BARCODE SECTION ---------------- -->
+<!-- BARCODE SECTION -->
 <section id="barcodeTab" class="tabSection">
+
+  <!-- CAMERA PREVIEW TOP -->
+  <div class="card">
+    <div id="reader" class="cameraPreview"></div>
+  </div>
+
+  <!-- SCAN COUNT BELOW CAMERA -->
   <div class="card headerCard">
     <strong>Barcode Scanner</strong>
     <div class="scanCount">Total Scans: <span id="totalCount">0</span></div>
   </div>
 
-  <!-- CAMERA DIV UPPER -->
-  <div class="card">
-    <div id="reader"></div>
+  <!-- START / STOP BUTTONS BELOW SCAN COUNT -->
+  <div class="card scanButtons">
+    <button id="startScan" class="smallBtn">Start Scan</button>
+    <button id="stopScan" class="smallBtn">Stop Scan</button>
   </div>
 
-  <!-- BUTTONS BELOW CAMERA -->
+  <!-- ENTRY FIELDS -->
   <div class="card">
-    <button id="startScan">Start Scan</button>
-    <button id="stopScan">Stop Scan</button>
     <div id="entryFields" style="display:none;">
       <input id="barcode" placeholder="Serial Number">
       <input id="photo" placeholder="Photo Number">
@@ -44,6 +50,7 @@
     </div>
   </div>
 
+  <!-- TABLE AND ACTIONS -->
   <table id="table">
     <tr><th>Serial</th><th>Photo</th><th>Remark</th><th>Date & Time</th><th>Delete</th></tr>
   </table>
@@ -55,21 +62,28 @@
   </div>
 </section>
 
-<!-- ---------------- QR CODE SECTION ---------------- -->
+<!-- QR CODE SECTION -->
 <section id="qrTab" class="tabSection">
+
+  <!-- CAMERA PREVIEW TOP -->
+  <div class="card">
+    <div id="qr-reader" class="cameraPreview"></div>
+  </div>
+
+  <!-- SCAN COUNT BELOW CAMERA -->
   <div class="card headerCard">
     <strong>QR Code Scanner</strong>
     <div class="scanCount">Total QR Scans: <span id="totalQRCount">0</span></div>
   </div>
 
-  <!-- QR CAMERA DIV UPPER -->
-  <div class="card">
-    <div id="qr-reader"></div>
+  <!-- START / STOP BUTTONS BELOW SCAN COUNT -->
+  <div class="card scanButtons">
+    <button id="startQR" class="smallBtn">Start QR Scan</button>
+    <button id="stopQR" class="smallBtn">Stop QR Scan</button>
   </div>
 
+  <!-- QR DATA FIELD -->
   <div class="card">
-    <button id="startQR">Start QR Scan</button>
-    <button id="stopQR">Stop QR Scan</button>
     <input id="qrField" readonly placeholder="QR Data">
   </div>
 
