@@ -8,45 +8,57 @@ document.addEventListener("DOMContentLoaded", () => {
     let audioCtx = null;
     let isProcessing = false;
 
-    // --- TAB SWITCHING ---
-    const tabs = document.querySelectorAll(".tabBtn");
-    const sections = document.querySelectorAll(".tabSection");
-    tabs.forEach(tab => {
-        tab.onclick = () => {
-            sections.forEach(s => s.style.display = "none");
-            tabs.forEach(t => t.classList.remove("activeTab"));
-            document.getElementById(tab.getAttribute("data-tab")).style.display = "block";
-            tab.classList.add("activeTab");
+    // Tabs logic
+    document.querySelectorAll(".tabBtn").forEach(btn => {
+        btn.onclick = () => {
+            document.querySelectorAll(".tabSection").forEach(s => s.style.display = "none");
+            document.querySelectorAll(".tabBtn").forEach(t => t.classList.remove("activeTab"));
+            document.getElementById(btn.dataset.tab).style.display = "block";
+            btn.classList.add("activeTab");
             stopBarcodeCamera(); stopQRCamera();
         };
     });
 
-    // --- SCAN CONFIG (Accuracy fix karne ke liye FPS 15 kiya hai) ---
-    const scanConfig = { 
-        fps: 15, 
-        qrbox: { width: 300, height: 300 },
-        aspectRatio: 1.0,
-        disableFlip: false // Standard reading ke liye
-    };
+    const scanConfig = { fps: 15, qrbox: { width: 280, height: 280 } };
 
-    function playHighBeep() {
+    function playBeep() {
         if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-        if (audioCtx.state === 'suspended') audioCtx.resume();
         const osc = audioCtx.createOscillator();
         const gain = audioCtx.createGain();
         osc.frequency.value = 2500;
-        gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.15);
+        gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.1);
         osc.connect(gain); gain.connect(audioCtx.destination);
-        osc.start(); osc.stop(audioCtx.currentTime + 0.15);
+        osc.start(); osc.stop(audioCtx.currentTime + 0.1);
     }
 
-    async function onScanSuccess(code, readerId, isQR = false) {
-        if (isProcessing) return;
-        isProcessing = true;
-        
-        playHighBeep();
-        if (navigator.vibrate) navigator.vibrate(100);
+    // Advanced Camera Features (Zoom & Torch)
+    function applyAdvancedFeatures(scanner) {
+        try {
+            const track = scanner.getRunningTrack();
+            const caps = track.getCapabilities();
+            
+            // Zoom
+            const zRange = document.getElementById("zoomRange");
+            if (caps.zoom) {
+                zRange.min = caps.zoom.min; zRange.max = caps.zoom.max; zRange.step = caps.zoom.step;
+                zRange.oninput = (e) => track.applyConstraints({advanced: [{zoom: e.target.value}]});
+            }
+            // Torch
+            const tBtn = document.getElementById("torchBtn");
+            if (caps.torch) {
+                let on = false;
+                tBtn.onclick = () => {
+                    on = !on;
+                    track.applyConstraints({advanced: [{torch: on}]});
+                    tBtn.innerText = on ? "Flashlight OFF" : "Flashlight ON";
+                };
+            } else { tBtn.style.display = "none"; }
+        } catch (e) { console.log("Advanced features not supported"); }
+    }
 
+    async function onScanSuccess(code, id, isQR) {
+        if (isProcessing) return;
+        isProcessing = true; playBeep();
         if (isQR) {
             await stopQRCamera();
             document.getElementById("qrField").value = code;
@@ -56,93 +68,76 @@ document.addEventListener("DOMContentLoaded", () => {
             await stopBarcodeCamera();
             document.getElementById("entryFields").style.display = "block";
             document.getElementById("barcode").value = code;
-            document.getElementById("datetime").value = new Date().toLocaleString('en-GB');
+            document.getElementById("datetime").value = new Date().toLocaleString();
         }
         isProcessing = false;
     }
 
-    // --- CAMERA CONTROLS ---
     document.getElementById("startScan").onclick = () => {
-        isProcessing = false;
         document.getElementById("reader").style.display = "block";
         if (!barcodeScanner) barcodeScanner = new Html5Qrcode("reader");
-        barcodeScanner.start({ facingMode: "environment" }, scanConfig, c => onScanSuccess(c, "reader", false))
-        .catch(err => alert("Camera error: " + err));
+        barcodeScanner.start({facingMode: "environment"}, scanConfig, c => onScanSuccess(c, "reader", false))
+        .then(() => applyAdvancedFeatures(barcodeScanner));
     };
 
     document.getElementById("startQR").onclick = () => {
-        isProcessing = false;
         document.getElementById("qr-reader").style.display = "block";
         if (!qrScanner) qrScanner = new Html5Qrcode("qr-reader");
-        qrScanner.start({ facingMode: "environment" }, scanConfig, c => onScanSuccess(c, "qr-reader", true))
-        .catch(err => alert("Camera error: " + err));
+        qrScanner.start({facingMode: "environment"}, scanConfig, c => onScanSuccess(c, "qr-reader", true))
+        .then(() => applyAdvancedFeatures(qrScanner));
     };
 
-    // --- RETRY BUTTON LOGIC (Fixed) ---
-    document.getElementById("retryBtn").onclick = () => {
-        document.getElementById("entryFields").style.display = "none";
-        document.getElementById("barcode").value = "";
-        document.getElementById("startScan").click(); // Dobara camera start karega
-    };
-
-    async function stopBarcodeCamera() { if (barcodeScanner?.isScanning) await barcodeScanner.stop(); document.getElementById("reader").style.display = "none"; }
-    async function stopQRCamera() { if (qrScanner?.isScanning) await qrScanner.stop(); document.getElementById("qr-reader").style.display = "none"; }
-
+    async function stopBarcodeCamera() { if(barcodeScanner?.isScanning) await barcodeScanner.stop(); document.getElementById("reader").style.display="none"; }
+    async function stopQRCamera() { if(qrScanner?.isScanning) await qrScanner.stop(); document.getElementById("qr-reader").style.display="none"; }
+    
     document.getElementById("stopScan").onclick = stopBarcodeCamera;
     document.getElementById("stopQR").onclick = stopQRCamera;
 
-    // --- SUBMIT & TABLE ---
+    // Retry Button
+    document.getElementById("retryBtn").onclick = () => {
+        document.getElementById("entryFields").style.display = "none";
+        document.getElementById("startScan").click();
+    };
+
     document.getElementById("submitBtn").onclick = () => {
-        const entry = {
+        barcodeData.push({
             module: document.getElementById("barcode").value,
             image: document.getElementById("photo").value,
             remark: document.getElementById("remark").value,
             datetime: document.getElementById("datetime").value
-        };
-        barcodeData.push(entry);
+        });
         localStorage.setItem("barcodeData", JSON.stringify(barcodeData));
-        updateBarcodeTable();
+        updateTable();
         document.getElementById("entryFields").style.display = "none";
-        // Reset fields
-        document.getElementById("photo").value = "";
-        document.getElementById("remark").value = "";
     };
 
-    function updateBarcodeTable() {
-        const table = document.getElementById("table");
-        table.innerHTML = "<tr><th>Serial</th><th>Photo</th><th>Remark</th><th>DateTime</th><th>Del</th></tr>";
+    function updateTable() {
+        const t = document.getElementById("table");
+        t.innerHTML = "<tr><th>Serial</th><th>Photo</th><th>Remark</th><th>Time</th><th>Del</th></tr>";
         barcodeData.forEach((e, i) => {
-            const row = table.insertRow(-1);
-            row.innerHTML = `<td>${e.module}</td><td>${e.image}</td><td>${e.remark}</td><td>${e.datetime}</td>
-            <td><button onclick="deleteRow(${i})" style="background:red; color:white; width:auto;">X</button></td>`;
+            let r = t.insertRow(-1);
+            r.innerHTML = `<td>${e.module}</td><td>${e.image}</td><td>${e.remark}</td><td>${e.datetime}</td><td><button onclick="del(${i})" style="width:auto;background:red;color:white">X</button></td>`;
         });
         document.getElementById("totalCount").innerText = barcodeData.length;
     }
 
-    window.deleteRow = (i) => { barcodeData.splice(i, 1); localStorage.setItem("barcodeData", JSON.stringify(barcodeData)); updateBarcodeTable(); };
+    window.del = (i) => { barcodeData.splice(i,1); localStorage.setItem("barcodeData", JSON.stringify(barcodeData)); updateTable(); };
 
-    // Copy & Export
     document.getElementById("copyBtn").onclick = () => {
-        let text = "Serial\tPhoto\tRemark\tDateTime\n" + barcodeData.map(e => `${e.module}\t${e.image}\t${e.remark}\t${e.datetime}`).join("\n");
-        navigator.clipboard.writeText(text).then(() => alert("Copied!"));
+        let txt = "Serial,Photo,Remark,Time\n" + barcodeData.map(e => `${e.module},${e.image},${e.remark},${e.datetime}`).join("\n");
+        navigator.clipboard.writeText(txt).then(() => alert("Copied!"));
     };
 
     document.getElementById("exportBtn").onclick = () => {
-        let csv = "Serial,Photo,Remark,DateTime\n" + barcodeData.map(e => `"${e.module}","${e.image}","${e.remark}","${e.datetime}"`).join("\n");
-        const blob = new Blob([csv], { type: 'text/csv' });
-        const a = document.createElement('a');
-        a.href = URL.createObjectURL(blob);
-        a.download = "Barcode_Data.csv";
-        a.click();
+        let csv = "Serial,Photo,Remark,Time\n" + barcodeData.map(e => `"${e.module}","${e.image}","${e.remark}","${e.datetime}"`).join("\n");
+        const blob = new Blob([csv], {type: 'text/csv'});
+        const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download="data.csv"; a.click();
     };
 
-    document.getElementById("syncBtn").onclick = async () => {
-        if (barcodeData.length === 0) return alert("No data to sync!");
-        try {
-            await fetch(WEBAPP_URL, { method: "POST", mode: "no-cors", body: JSON.stringify(barcodeData) });
-            alert("Sync Successful!");
-        } catch (e) { alert("Sync Failed"); }
+    document.getElementById("syncBtn").onclick = () => {
+        fetch(WEBAPP_URL, {method: "POST", mode: "no-cors", body: JSON.stringify(barcodeData)});
+        alert("Syncing with Google Sheets...");
     };
 
-    updateBarcodeTable();
+    updateTable();
 });
