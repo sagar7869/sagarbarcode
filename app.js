@@ -23,6 +23,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     function playBeep() {
         if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        if (audioCtx.state === 'suspended') audioCtx.resume();
         const osc = audioCtx.createOscillator();
         const gain = audioCtx.createGain();
         osc.frequency.value = 2500;
@@ -31,34 +32,38 @@ document.addEventListener("DOMContentLoaded", () => {
         osc.start(); osc.stop(audioCtx.currentTime + 0.1);
     }
 
-    // Advanced Camera Features (Zoom & Torch)
-    function applyAdvancedFeatures(scanner) {
+    // Professional Overlay Logic (Zoom & Torch)
+    function applyOverlayControls(scanner, prefix = "") {
         try {
             const track = scanner.getRunningTrack();
             const caps = track.getCapabilities();
             
-            // Zoom
-            const zRange = document.getElementById("zoomRange");
-            if (caps.zoom) {
+            // Zoom Slider
+            const zRange = document.getElementById("zoomRange" + prefix);
+            if (caps.zoom && zRange) {
                 zRange.min = caps.zoom.min; zRange.max = caps.zoom.max; zRange.step = caps.zoom.step;
                 zRange.oninput = (e) => track.applyConstraints({advanced: [{zoom: e.target.value}]});
             }
-            // Torch
-            const tBtn = document.getElementById("torchBtn");
-            if (caps.torch) {
+
+            // Torch Button
+            const tBtn = document.getElementById("torchBtn" + prefix);
+            if (caps.torch && tBtn) {
                 let on = false;
                 tBtn.onclick = () => {
                     on = !on;
                     track.applyConstraints({advanced: [{torch: on}]});
-                    tBtn.innerText = on ? "Flashlight OFF" : "Flashlight ON";
+                    tBtn.style.background = on ? "rgba(255, 193, 7, 0.7)" : "rgba(255, 255, 255, 0.2)";
+                    tBtn.innerText = on ? "💡" : "🔦";
                 };
-            } else { tBtn.style.display = "none"; }
-        } catch (e) { console.log("Advanced features not supported"); }
+            } else if (tBtn) { tBtn.style.display = "none"; }
+        } catch (e) { console.log("Features not supported"); }
     }
 
     async function onScanSuccess(code, id, isQR) {
         if (isProcessing) return;
         isProcessing = true; playBeep();
+        if (navigator.vibrate) navigator.vibrate(100);
+
         if (isQR) {
             await stopQRCamera();
             document.getElementById("qrField").value = code;
@@ -68,7 +73,7 @@ document.addEventListener("DOMContentLoaded", () => {
             await stopBarcodeCamera();
             document.getElementById("entryFields").style.display = "block";
             document.getElementById("barcode").value = code;
-            document.getElementById("datetime").value = new Date().toLocaleString();
+            document.getElementById("datetime").value = new Date().toLocaleString('en-GB');
         }
         isProcessing = false;
     }
@@ -77,14 +82,14 @@ document.addEventListener("DOMContentLoaded", () => {
         document.getElementById("reader").style.display = "block";
         if (!barcodeScanner) barcodeScanner = new Html5Qrcode("reader");
         barcodeScanner.start({facingMode: "environment"}, scanConfig, c => onScanSuccess(c, "reader", false))
-        .then(() => applyAdvancedFeatures(barcodeScanner));
+        .then(() => applyOverlayControls(barcodeScanner));
     };
 
     document.getElementById("startQR").onclick = () => {
         document.getElementById("qr-reader").style.display = "block";
         if (!qrScanner) qrScanner = new Html5Qrcode("qr-reader");
         qrScanner.start({facingMode: "environment"}, scanConfig, c => onScanSuccess(c, "qr-reader", true))
-        .then(() => applyAdvancedFeatures(qrScanner));
+        .then(() => applyOverlayControls(qrScanner, "QR"));
     };
 
     async function stopBarcodeCamera() { if(barcodeScanner?.isScanning) await barcodeScanner.stop(); document.getElementById("reader").style.display="none"; }
@@ -93,7 +98,6 @@ document.addEventListener("DOMContentLoaded", () => {
     document.getElementById("stopScan").onclick = stopBarcodeCamera;
     document.getElementById("stopQR").onclick = stopQRCamera;
 
-    // Retry Button
     document.getElementById("retryBtn").onclick = () => {
         document.getElementById("entryFields").style.display = "none";
         document.getElementById("startScan").click();
@@ -109,6 +113,7 @@ document.addEventListener("DOMContentLoaded", () => {
         localStorage.setItem("barcodeData", JSON.stringify(barcodeData));
         updateTable();
         document.getElementById("entryFields").style.display = "none";
+        document.getElementById("photo").value = ""; document.getElementById("remark").value = "";
     };
 
     function updateTable() {
@@ -116,7 +121,7 @@ document.addEventListener("DOMContentLoaded", () => {
         t.innerHTML = "<tr><th>Serial</th><th>Photo</th><th>Remark</th><th>Time</th><th>Del</th></tr>";
         barcodeData.forEach((e, i) => {
             let r = t.insertRow(-1);
-            r.innerHTML = `<td>${e.module}</td><td>${e.image}</td><td>${e.remark}</td><td>${e.datetime}</td><td><button onclick="del(${i})" style="width:auto;background:red;color:white">X</button></td>`;
+            r.innerHTML = `<td>${e.module}</td><td>${e.image}</td><td>${e.remark}</td><td>${e.datetime}</td><td><button onclick="del(${i})" style="width:auto;background:red;color:white;padding:5px">X</button></td>`;
         });
         document.getElementById("totalCount").innerText = barcodeData.length;
     }
@@ -124,14 +129,14 @@ document.addEventListener("DOMContentLoaded", () => {
     window.del = (i) => { barcodeData.splice(i,1); localStorage.setItem("barcodeData", JSON.stringify(barcodeData)); updateTable(); };
 
     document.getElementById("copyBtn").onclick = () => {
-        let txt = "Serial,Photo,Remark,Time\n" + barcodeData.map(e => `${e.module},${e.image},${e.remark},${e.datetime}`).join("\n");
+        let txt = "Serial\tPhoto\tRemark\tTime\n" + barcodeData.map(e => `${e.module}\t${e.image}\t${e.remark}\t${e.datetime}`).join("\n");
         navigator.clipboard.writeText(txt).then(() => alert("Copied!"));
     };
 
     document.getElementById("exportBtn").onclick = () => {
         let csv = "Serial,Photo,Remark,Time\n" + barcodeData.map(e => `"${e.module}","${e.image}","${e.remark}","${e.datetime}"`).join("\n");
         const blob = new Blob([csv], {type: 'text/csv'});
-        const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download="data.csv"; a.click();
+        const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download="Barcode_Data.csv"; a.click();
     };
 
     document.getElementById("syncBtn").onclick = () => {
