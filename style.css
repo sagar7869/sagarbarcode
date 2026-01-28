@@ -1,186 +1,43 @@
-/* ---------- GENERAL STYLING ---------- */
-body {
-  font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-  margin: 0;
-  padding: 0;
-  background-color: #f4f7f9;
-  color: #333;
-  text-align: center;
+body { font-family: 'Segoe UI', sans-serif; margin: 0; background: #f4f7f9; text-align: center; }
+header, footer { background: linear-gradient(135deg, #ff5722, #e64a19); color: white; padding: 15px 0; }
+nav { display: flex; justify-content: center; margin: 20px 0; gap: 10px; }
+
+.tabBtn { padding: 12px 25px; border: 2px solid #ff5722; background: white; color: #ff5722; border-radius: 30px; font-weight: bold; cursor: pointer; }
+.tabBtn.activeTab { background: #ff5722; color: white; }
+
+.tabSection { display: none; max-width: 450px; margin: 0 auto; padding: 15px; background: white; border-radius: 20px; }
+
+/* CAMERA WINDOW */
+.cameraPreview { 
+    display: none; width: 100%; height: 400px; background: #000; 
+    border-radius: 20px; overflow: hidden; position: relative; border: 4px solid #333; 
 }
-
-/* Header & Footer */
-header, footer {
-  background: linear-gradient(135deg, #ff5722, #e64a19);
-  color: white;
-  padding: 15px 0;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.2);
-}
-
-header h1 { margin: 0; font-size: 1.5rem; letter-spacing: 1px; }
-
-footer {
-  margin-top: 30px;
-  font-size: 0.9rem;
-  padding: 10px 0;
-}
-
-/* Navigation Tabs */
-nav {
-  display: flex;
-  justify-content: center;
-  margin: 20px 0;
-  gap: 10px;
-}
-
-.tabBtn {
-  padding: 12px 25px;
-  border: 2px solid #ff5722;
-  background: white;
-  color: #ff5722;
-  border-radius: 30px;
-  font-weight: bold;
-  cursor: pointer;
-  transition: all 0.3s ease;
-}
-
-.tabBtn.activeTab {
-  background: #ff5722;
-  color: white;
-  box-shadow: 0 4px 10px rgba(255, 87, 34, 0.3);
-}
-
-/* Section Styling */
-.tabSection {
-  display: none;
-  max-width: 480px; /* Thoda wide kiya hai bade camera ke liye */
-  margin: 0 auto 20px auto;
-  padding: 15px;
-  background: white;
-  border-radius: 20px;
-  box-shadow: 0 10px 25px rgba(0,0,0,0.05);
-}
-
-.card {
-  padding: 15px;
-  margin-bottom: 15px;
-  border-radius: 15px;
-  background: #fff;
-}
-
-/* ---------- UPDATED: BADI CAMERA WINDOW ---------- */
-.cameraPreview {
-  display: none; 
-  width: 95%;           /* Mobile screen ki puri width use karega */
-  max-width: 420px;     /* Desktop par bohot bada na ho jaye */
-  height: 420px;        /* Height ko 320 se badha kar 420 kiya */
-  background: #000;
-  border-radius: 25px;
-  overflow: hidden;
-  margin: 0 auto 20px auto;
-  position: relative;
-  border: 5px solid #333;
-  transition: all 0.3s ease;
-}
-
-/* Laser Scan Line Animation - Bade area ke liye adjust kiya */
 .cameraPreview::after {
-  content: "";
-  position: absolute;
-  top: 15%;
-  left: 10%;
-  width: 80%;
-  height: 3px;
-  background: #00ff00;
-  box-shadow: 0 0 15px 5px rgba(0, 255, 0, 0.7);
-  animation: scanMove 1.8s infinite ease-in-out;
-  z-index: 10;
+    content: ""; position: absolute; top: 20%; left: 10%; width: 80%; height: 3px; 
+    background: #00ff00; box-shadow: 0 0 15px #00ff00; animation: scanMove 2s infinite; z-index: 10;
 }
+@keyframes scanMove { 0%, 100% { top: 20%; } 50% { top: 80%; } }
 
-@keyframes scanMove {
-  0%, 100% { top: 15%; opacity: 0.8; }
-  50% { top: 85%; opacity: 1; }
-}
-
-/* Focus Square - Isko 220px se badha kar 300px kiya */
 .cameraPreview::before {
-  content: "";
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  width: 300px;         
-  height: 300px;
-  border: 2px solid rgba(255, 255, 255, 0.6);
-  box-shadow: 0 0 0 500px rgba(0, 0, 0, 0.5); /* Outer area ko thoda light rakha taaki video dikhe */
-  z-index: 5;
-  border-radius: 20px;
+    content: ""; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+    width: 280px; height: 280px; border: 2px solid rgba(255,255,255,0.5);
+    box-shadow: 0 0 0 500px rgba(0,0,0,0.6); z-index: 5; border-radius: 15px;
 }
 
-/* Scan Success Effect */
-.scan-success {
-  border-color: #00ff00 !important;
-  transform: scale(1.02);
-}
+/* CONTROLS */
+.camera-controls { background: #eee; padding: 10px; border-radius: 10px; margin: 10px 0; }
+.zoom-container { display: flex; align-items: center; gap: 10px; margin-bottom: 5px; }
+#zoomRange { flex-grow: 1; }
+#torchBtn { background: #607d8b; color: white; font-size: 0.8rem; height: 35px; }
 
-/* ---------- BUTTONS & INPUTS ---------- */
-button {
-  width: 100%;
-  padding: 12px;
-  margin: 5px 0;
-  border-radius: 12px;
-  border: none;
-  font-weight: bold;
-  font-size: 1rem;
-  cursor: pointer;
-  transition: transform 0.1s;
-}
-
-button:active { transform: scale(0.97); }
-
+button { width: 100%; padding: 12px; margin: 5px 0; border-radius: 10px; border: none; font-weight: bold; cursor: pointer; }
 #startScan, #startQR { background: #ff9800; color: white; }
-#stopScan, #stopQR { background: #546e7a; color: white; }
-#submitBtn { background: #4caf50; color: white; margin-top: 15px; }
-#retryBtn { background: #9e9e9e; color: white; }
-#copyBtn, #copyQR { background: #2196f3; color: white; }
-#exportBtn, #exportQR { background: #673ab7; color: white; }
-#syncBtn { background: #ff5722; color: white; border: 2px solid #e64a19; }
+#submitBtn { background: #4caf50; color: white; }
+#retryBtn { background: #757575; color: white; }
+#copyBtn { background: #2196f3; color: white; }
+#exportBtn { background: #673ab7; color: white; }
 
-input, textarea {
-  width: 100%;
-  padding: 12px;
-  margin: 8px 0;
-  border: 1px solid #ddd;
-  border-radius: 10px;
-  box-sizing: border-box;
-  font-size: 14px;
-}
-
-/* ---------- TABLE DESIGN ---------- */
-#table {
-  width: 100%;
-  border-collapse: collapse;
-  margin-top: 20px;
-  background: white;
-  font-size: 13px;
-}
-
-#table th {
-  background: #f8f9fa;
-  padding: 12px 8px;
-  border-bottom: 2px solid #eee;
-  color: #666;
-}
-
-#table td {
-  padding: 10px 5px;
-  border-bottom: 1px solid #f1f1f1;
-}
-
-/* Flash Effect */
-.flash-effect {
-  position: fixed;
-  top: 0; left: 0; width: 100%; height: 100%;
-  background: rgba(255, 255, 255, 0.8);
-  z-index: 9999;
-  pointer-events: none;
-}
+input, textarea { width: 100%; padding: 12px; margin: 8px 0; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; }
+#table { width: 100%; border-collapse: collapse; margin-top: 15px; font-size: 12px; }
+#table th { background: #eee; padding: 10px; }
+#table td { border-bottom: 1px solid #eee; padding: 8px; }
