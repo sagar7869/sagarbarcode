@@ -35,7 +35,7 @@
     <textarea id="remark" placeholder="Remark"></textarea>
     <input id="datetime" readonly>
     <button id="submitBtn">Submit to Sheet</button>
-    <button id="retryBtn" style="background:#666;">Retry</button>
+    <button id="retryBtn">Retry</button>
   </div>
 
   <table id="table">
@@ -43,7 +43,25 @@
   </table>
 
   <div class="actions">
-    <button id="syncBtn">Update All to Google Sheet</button>
+    <button id="copyBtn">Copy Table</button>
+    <button id="exportBtn">Export CSV</button>
+    <button id="syncBtn">Update Google Sheet</button>
+  </div>
+</section>
+
+<section id="qrTab" class="tabSection">
+  <div class="card headerCard">
+    <strong>QR Code Scanner</strong>
+  </div>
+  <div id="qr-reader" class="cameraPreview"></div>
+  <div class="scanButtons">
+    <button id="startQR">Start QR Scan</button>
+    <button id="stopQR">Stop QR Scan</button>
+  </div>
+  <input id="qrField" readonly placeholder="QR Data">
+  <div class="actions">
+    <button id="copyQR">Copy QR</button>
+    <button id="exportQR">Export QR</button>
   </div>
 </section>
 
