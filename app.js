@@ -8,7 +8,7 @@ document.addEventListener("DOMContentLoaded", () => {
     let audioCtx = null;
     let isProcessing = false;
 
-    // Tab Switching
+    // --- TAB SWITCHING ---
     const tabs = document.querySelectorAll(".tabBtn");
     const sections = document.querySelectorAll(".tabSection");
     tabs.forEach(tab => {
@@ -21,11 +21,12 @@ document.addEventListener("DOMContentLoaded", () => {
         };
     });
 
-    // Bada Scan Box Configuration
+    // --- SCAN CONFIG (Accuracy fix karne ke liye FPS 15 kiya hai) ---
     const scanConfig = { 
-        fps: 25, 
-        qrbox: { width: 300, height: 300 }, // Size increased to match CSS
-        aspectRatio: 1.0 
+        fps: 15, 
+        qrbox: { width: 300, height: 300 },
+        aspectRatio: 1.0,
+        disableFlip: false // Standard reading ke liye
     };
 
     function playHighBeep() {
@@ -42,6 +43,7 @@ document.addEventListener("DOMContentLoaded", () => {
     async function onScanSuccess(code, readerId, isQR = false) {
         if (isProcessing) return;
         isProcessing = true;
+        
         playHighBeep();
         if (navigator.vibrate) navigator.vibrate(100);
 
@@ -59,23 +61,37 @@ document.addEventListener("DOMContentLoaded", () => {
         isProcessing = false;
     }
 
+    // --- CAMERA CONTROLS ---
     document.getElementById("startScan").onclick = () => {
+        isProcessing = false;
         document.getElementById("reader").style.display = "block";
         if (!barcodeScanner) barcodeScanner = new Html5Qrcode("reader");
-        barcodeScanner.start({ facingMode: "environment" }, scanConfig, c => onScanSuccess(c, "reader", false));
+        barcodeScanner.start({ facingMode: "environment" }, scanConfig, c => onScanSuccess(c, "reader", false))
+        .catch(err => alert("Camera error: " + err));
     };
 
     document.getElementById("startQR").onclick = () => {
+        isProcessing = false;
         document.getElementById("qr-reader").style.display = "block";
         if (!qrScanner) qrScanner = new Html5Qrcode("qr-reader");
-        qrScanner.start({ facingMode: "environment" }, scanConfig, c => onScanSuccess(c, "qr-reader", true));
+        qrScanner.start({ facingMode: "environment" }, scanConfig, c => onScanSuccess(c, "qr-reader", true))
+        .catch(err => alert("Camera error: " + err));
+    };
+
+    // --- RETRY BUTTON LOGIC (Fixed) ---
+    document.getElementById("retryBtn").onclick = () => {
+        document.getElementById("entryFields").style.display = "none";
+        document.getElementById("barcode").value = "";
+        document.getElementById("startScan").click(); // Dobara camera start karega
     };
 
     async function stopBarcodeCamera() { if (barcodeScanner?.isScanning) await barcodeScanner.stop(); document.getElementById("reader").style.display = "none"; }
     async function stopQRCamera() { if (qrScanner?.isScanning) await qrScanner.stop(); document.getElementById("qr-reader").style.display = "none"; }
+
     document.getElementById("stopScan").onclick = stopBarcodeCamera;
     document.getElementById("stopQR").onclick = stopQRCamera;
 
+    // --- SUBMIT & TABLE ---
     document.getElementById("submitBtn").onclick = () => {
         const entry = {
             module: document.getElementById("barcode").value,
@@ -87,6 +103,9 @@ document.addEventListener("DOMContentLoaded", () => {
         localStorage.setItem("barcodeData", JSON.stringify(barcodeData));
         updateBarcodeTable();
         document.getElementById("entryFields").style.display = "none";
+        // Reset fields
+        document.getElementById("photo").value = "";
+        document.getElementById("remark").value = "";
     };
 
     function updateBarcodeTable() {
@@ -102,10 +121,10 @@ document.addEventListener("DOMContentLoaded", () => {
 
     window.deleteRow = (i) => { barcodeData.splice(i, 1); localStorage.setItem("barcodeData", JSON.stringify(barcodeData)); updateBarcodeTable(); };
 
-    // Copy & Export Logic
+    // Copy & Export
     document.getElementById("copyBtn").onclick = () => {
-        let text = barcodeData.map(e => `${e.module}\t${e.image}\t${e.remark}\t${e.datetime}`).join("\n");
-        navigator.clipboard.writeText("Serial\tPhoto\tRemark\tDateTime\n" + text).then(() => alert("Copied!"));
+        let text = "Serial\tPhoto\tRemark\tDateTime\n" + barcodeData.map(e => `${e.module}\t${e.image}\t${e.remark}\t${e.datetime}`).join("\n");
+        navigator.clipboard.writeText(text).then(() => alert("Copied!"));
     };
 
     document.getElementById("exportBtn").onclick = () => {
@@ -118,7 +137,7 @@ document.addEventListener("DOMContentLoaded", () => {
     };
 
     document.getElementById("syncBtn").onclick = async () => {
-        if (barcodeData.length === 0) return alert("No data!");
+        if (barcodeData.length === 0) return alert("No data to sync!");
         try {
             await fetch(WEBAPP_URL, { method: "POST", mode: "no-cors", body: JSON.stringify(barcodeData) });
             alert("Sync Successful!");
