@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="hi">
+<html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
@@ -8,40 +8,46 @@
   <script src="https://unpkg.com/html5-qrcode"></script>
 </head>
 <body>
+
 <header><h1>SagarBarcode Scanner</h1></header>
+
 <nav>
   <button class="tabBtn activeTab" data-tab="barcodeTab">Barcode</button>
   <button class="tabBtn" data-tab="qrTab">QR Code</button>
 </nav>
 
-<section id="barcodeTab" class="tabSection" style="display:block;">
-  <div id="reader-container" style="position: relative;">
-      <div id="reader" class="cameraPreview"></div>
-      <div id="zoom-controls" class="internal-zoom" style="display:none;">
-          <button id="zoom-out">− 1x</button>
-          <button id="zoom-in">+ Zoom</button>
+<div class="container">
+  <section id="barcodeTab" class="tabSection" style="display:block;">
+    <div class="camera-box">
+      <div id="reader"></div>
+      <div class="zoom-overlay" id="z-ctrl" style="display:none;">
+        <button id="z-out">1x</button>
+        <button id="z-in">Zoom +</button>
       </div>
+    </div>
+    
+    <button id="startScan" class="primary-btn">Start Barcode</button>
+    
+    <div id="entryFields" style="display:none;" class="entry-card">
+      <input id="barcode" placeholder="Module SR NO">
+      <input id="photo" placeholder="Image NO">
+      <textarea id="remark" placeholder="Remark"></textarea>
+      <button id="submitBtn">Submit Data</button>
+    </div>
+  </section>
+
+  <section id="qrTab" class="tabSection">
+    <div class="camera-box">
+      <div id="qr-reader"></div>
+    </div>
+    <button id="startQR" class="primary-btn">Start QR Scan</button>
+    <input id="qrField" readonly placeholder="QR Data Result">
+  </section>
+
+  <div class="table-wrapper">
+    <table id="table"></table>
   </div>
-  
-  <button id="startScan">Start Barcode</button>
-  <button id="stopScan" style="display:none;">Stop Scan</button>
-
-  <div id="entryFields" style="display:none;" class="card">
-    <input id="barcode" placeholder="Module SR NO">
-    <input id="photo" placeholder="Image NO">
-    <textarea id="remark" placeholder="Remark"></textarea>
-    <button id="submitBtn">Submit to Sheet</button>
-  </div>
-
-  <table id="table"></table>
-</section>
-
-<section id="qrTab" class="tabSection">
-  <div id="qr-reader" class="cameraPreview"></div>
-  <button id="startQR">Start QR Scan</button>
-  <button id="stopQR" style="display:none;">Stop QR</button>
-  <input id="qrField" readonly placeholder="QR Data">
-</section>
+</div>
 
 <script src="app.js"></script>
 </body>
