@@ -2,6 +2,7 @@ const WEBAPP_URL = "https://script.google.com/macros/s/AKfycbzT7ezPZ79p5AO88LAiL
 
 document.addEventListener("DOMContentLoaded", ()=>{
 
+  // ---------- TAB SWITCH ----------
   const tabs = document.querySelectorAll(".tabBtn");
   const sections = document.querySelectorAll(".tabSection");
   sections.forEach(s => s.style.display="none");
@@ -11,40 +12,62 @@ document.addEventListener("DOMContentLoaded", ()=>{
       tabs.forEach(t=>t.classList.remove("activeTab"));
       document.getElementById(btn.dataset.tab).style.display="block";
       btn.classList.add("activeTab");
+
+      // Stop any running scanners when tab changes
+      if(window.barcodeScanner) window.barcodeScanner.stop();
+      if(window.qrScanner) window.qrScanner.stop();
+      hideBarcodeFields();
+      hideQRField();
     });
   });
 
-  // ---------- BARCODE ----------
+  // ---------- DATA ----------
   let barcodeData = JSON.parse(localStorage.getItem("barcodeData") || "[]");
   let syncedBarcodes = JSON.parse(localStorage.getItem("syncedBarcodes") || "[]");
-  let scanner;
+  let qrData = JSON.parse(localStorage.getItem("qrData") || "[]");
+
   const beep = new Audio("https://www.soundjay.com/button/beep-07.wav");
 
   updateBarcodeTable();
+  updateQRCount();
 
-  const readerDiv = document.getElementById("reader");
-  const overlay = document.getElementById("scanOverlay");
-  readerDiv.style.display = "none";
+  // ---------- HELPERS ----------
+  function hideBarcodeFields(){ document.getElementById("entryFields").style.display="none"; }
+  function hideQRField(){ document.getElementById("qrField").value=""; }
 
-  document.getElementById("startScan").onclick = ()=>{
-    readerDiv.style.display = "block";
-    scanner = new Html5Qrcode("reader");
-    scanner.start(
-      {facingMode:"environment"},
-      {fps:10, qrbox:{width:250,height:250}},
-      code=>{
+  // ---------- BARCODE SCAN ----------
+  const startScanBtn = document.getElementById("startScan");
+  const stopScanBtn = document.getElementById("stopScan");
+
+  startScanBtn.onclick = ()=>{
+    hideBarcodeFields();
+    if(window.barcodeScanner) window.barcodeScanner.stop();
+    window.barcodeScanner = new Html5Qrcode("reader");
+
+    window.barcodeScanner.start(
+      { facingMode: "environment" },
+      { fps: 10, qrbox: 250, experimentalFeatures: {useBarCodeDetectorIfSupported: true} },
+      (code, decodedResult)=>{
+        // Detected barcode
         beep.play();
-        overlay.style.display="block";
-        overlay.classList.add("active");
-        setTimeout(()=>{ overlay.style.display="none"; overlay.classList.remove("active"); },700);
         showBarcodeFields(code);
-        scanner.stop().then(()=>{ readerDiv.style.display="none"; });
+        // Stop automatically after capture
+        window.barcodeScanner.stop().catch(()=>{});
+      },
+      errorMsg=>{
+        // console.log("Barcode scan error:", errorMsg);
       }
-    );
+    ).catch(err=>{
+      alert("Cannot start barcode scanner: "+err);
+    });
   };
 
-  document.getElementById("stopScan").onclick = ()=>{
-    if(scanner) scanner.stop().then(()=>{ readerDiv.style.display="none"; });
+  stopScanBtn.onclick = ()=>{
+    if(window.barcodeScanner){
+      window.barcodeScanner.stop().then(()=>{
+        hideBarcodeFields();
+      });
+    }
   };
 
   function showBarcodeFields(code){
@@ -55,11 +78,8 @@ document.addEventListener("DOMContentLoaded", ()=>{
     document.getElementById("datetime").value = new Date().toLocaleString("en-GB");
   }
 
-  document.getElementById("retryBtn").onclick = ()=>{
-    document.getElementById("entryFields").style.display="none";
-  };
+  document.getElementById("retryBtn").onclick = hideBarcodeFields;
 
-  // ---------- SUBMIT ----------
   document.getElementById("submitBtn").onclick = ()=>{
     const entry = {
       barcode: barcode.value.trim(),
@@ -68,27 +88,34 @@ document.addEventListener("DOMContentLoaded", ()=>{
       datetime: datetime.value
     };
     if(!entry.barcode) return alert("Scan first");
+
     barcodeData.push(entry);
     localStorage.setItem("barcodeData", JSON.stringify(barcodeData));
     updateBarcodeTable();
-    sendBarcodeToSheet(entry,true);
+    sendToSheet(entry,true);
+    hideBarcodeFields();
   };
 
-  function sendBarcodeToSheet(entry,realtime=false){
+  function sendToSheet(entry,realtime=false){
     if(syncedBarcodes.includes(entry.barcode)) return;
-    fetch(WEBAPP_URL,{method:"POST",body:JSON.stringify(entry)})
-      .then(r=>r.json())
-      .then(()=>{ syncedBarcodes.push(entry.barcode); localStorage.setItem("syncedBarcodes",JSON.stringify(syncedBarcodes));
-        if(realtime) alert("Google Sheet updated ✅");
-      })
-      .catch(()=>{ if(realtime) alert("Net issue – data saved locally"); });
+    fetch(WEBAPP_URL,{
+      method:"POST",
+      body: JSON.stringify(entry)
+    }).then(r=>r.json()).then(()=>{
+      syncedBarcodes.push(entry.barcode);
+      localStorage.setItem("syncedBarcodes", JSON.stringify(syncedBarcodes));
+      if(realtime) alert("Google Sheet updated ✅");
+    }).catch(()=>{
+      if(realtime) alert("Network issue – saved locally");
+    });
   }
 
   document.getElementById("syncBtn").onclick = ()=>{
     let count=0;
     barcodeData.forEach(e=>{
       if(!syncedBarcodes.includes(e.barcode)){
-        sendBarcodeToSheet(e); count++;
+        sendToSheet(e);
+        count++;
       }
     });
     alert(count+" records synced to Google Sheet");
@@ -98,57 +125,76 @@ document.addEventListener("DOMContentLoaded", ()=>{
     const t = document.getElementById("table");
     t.innerHTML = "<tr><th>Serial</th><th>Photo</th><th>Remark</th><th>Date & Time</th><th>Delete</th></tr>";
     barcodeData.forEach((e,i)=>{
-      const r=t.insertRow(-1);
+      const r = t.insertRow(-1);
       r.insertCell(0).innerText=e.barcode;
       r.insertCell(1).innerText=e.photo;
       r.insertCell(2).innerText=e.remark;
       r.insertCell(3).innerText=e.datetime;
-      const d=r.insertCell(4);
-      const b=document.createElement("button");
+      const d = r.insertCell(4);
+      const b = document.createElement("button");
       b.innerText="Delete";
       b.onclick=()=>{
         barcodeData.splice(i,1);
-        localStorage.setItem("barcodeData",JSON.stringify(barcodeData));
+        localStorage.setItem("barcodeData", JSON.stringify(barcodeData));
         updateBarcodeTable();
       };
       d.appendChild(b);
     });
-    document.getElementById("totalCount").innerText=barcodeData.length;
+    document.getElementById("totalCount").innerText = barcodeData.length;
   }
 
-  // ---------- COPY / SAVE / EXPORT BARCODE ----------
-  copyBtn.onclick = ()=>{ let str="Serial,Photo,Remark,DateTime\n"; barcodeData.forEach(e=>str+=`${e.barcode},${e.photo},${e.remark},${e.datetime}\n`); navigator.clipboard.writeText(str); alert("Copied"); };
-  saveLocalBtn.onclick = ()=>{ localStorage.setItem("barcodeData",JSON.stringify(barcodeData)); alert("Saved locally"); };
-  exportBtn.onclick = ()=>{ let csv="Serial,Photo,Remark,DateTime\n"; barcodeData.forEach(e=>csv+=`${e.barcode},${e.photo},${e.remark},${e.datetime}\n`); const a=document.createElement("a"); a.href=URL.createObjectURL(new Blob([csv],{type:"text/csv"})); a.download="Barcode_Data.csv"; a.click(); };
-
-  // ---------- QR CODE ----------
-  let qrData=JSON.parse(localStorage.getItem("qrData")||"[]");
-  let qrScanner; const qrOverlay=document.getElementById("qrOverlay");
-  function updateQRCount(){ document.getElementById("totalQRCount").innerText=qrData.length; } updateQRCount();
-  const qrDiv=document.getElementById("qr-reader"); qrDiv.style.display="none";
-
-  document.getElementById("startQR").onclick = ()=>{
-    qrDiv.style.display="block";
-    qrScanner=new Html5Qrcode("qr-reader");
-    qrScanner.start({facingMode:"environment"},{fps:10,qrbox:{width:250,height:250}},code=>{
-      beep.play();
-      qrOverlay.style.display="block"; qrOverlay.classList.add("active");
-      setTimeout(()=>{qrOverlay.style.display="none";qrOverlay.classList.remove("active");},700);
-      document.getElementById("qrField").value=code;
-      qrData.push(code); localStorage.setItem("qrData",JSON.stringify(qrData)); updateQRCount();
-      qrScanner.stop().then(()=>{ qrDiv.style.display="none"; });
-    }).catch(err=>alert("QR Camera error: "+err));
+  // ---------- COPY / SAVE / EXPORT ----------
+  copyBtn.onclick = ()=>{
+    let str="Serial,Photo,Remark,DateTime\n";
+    barcodeData.forEach(e=>str+=`${e.barcode},${e.photo},${e.remark},${e.datetime}\n`);
+    navigator.clipboard.writeText(str); alert("Copied");
+  };
+  saveLocalBtn.onclick = ()=>{
+    localStorage.setItem("barcodeData", JSON.stringify(barcodeData)); alert("Saved locally");
+  };
+  exportBtn.onclick = ()=>{
+    let csv="Serial,Photo,Remark,DateTime\n";
+    barcodeData.forEach(e=>csv+=`${e.barcode},${e.photo},${e.remark},${e.datetime}\n`);
+    const a=document.createElement("a");
+    a.href=URL.createObjectURL(new Blob([csv],{type:"text/csv"}));
+    a.download="Barcode_Data.csv"; a.click();
   };
 
-  document.getElementById("stopQR").onclick = ()=>{
-    if(qrScanner) qrScanner.stop().then(()=>{ qrDiv.style.display="none"; });
+  // ---------- QR SCANNER ----------
+  const startQRBtn = document.getElementById("startQR");
+  const stopQRBtn = document.getElementById("stopQR");
+  startQRBtn.onclick = ()=>{
+    hideQRField();
+    if(window.qrScanner) window.qrScanner.stop();
+    window.qrScanner = new Html5Qrcode("qr-reader");
+
+    window.qrScanner.start(
+      { facingMode: "environment" },
+      { fps: 10, qrbox: 250 },
+      (code,decodedResult)=>{
+        beep.play();
+        document.getElementById("qrField").value = code;
+        qrData.push(code);
+        localStorage.setItem("qrData",JSON.stringify(qrData));
+        updateQRCount();
+        window.qrScanner.stop().catch(()=>{});
+      }
+    ).catch(err=>alert("QR Camera error: "+err));
   };
+
+  stopQRBtn.onclick = ()=>{
+    if(window.qrScanner){
+      window.qrScanner.stop().then(()=>{ hideQRField(); });
+    }
+  };
+
+  function updateQRCount(){ document.getElementById("totalQRCount").innerText = qrData.length; }
 
   document.getElementById("copyQR").onclick = ()=>{
     navigator.clipboard.writeText(qrData.join("\n")); alert("Copied!");
   };
   document.getElementById("saveQR").onclick = ()=>{
-    localStorage.setItem("qrData",JSON.stringify(qrData)); alert("Saved locally!");
+    localStorage.setItem("qrData", JSON.stringify(qrData)); alert("Saved locally!");
   };
   document.getElementById("exportQR").onclick = ()=>{
     let csv="QR Code\n"+qrData.join("\n");
