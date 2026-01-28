@@ -1,163 +1,157 @@
-body {
+/* ===============================
+   GLOBAL
+================================ */
+* {
+  box-sizing: border-box;
   font-family: Arial, sans-serif;
-  margin: 0;
-  padding: 0;
-  background: #f0f4f8;
-  color: #333;
 }
 
-header, footer {
-  background: #ff5722;
-  color: white;
+body {
+  margin: 0;
+  background: #f2f4f7;
+}
+
+/* ===============================
+   HEADER
+================================ */
+.header {
+  background: #ff5a1f;
+  color: #fff;
   text-align: center;
-  padding: 10px 0;
-}
-
-header h1, footer {
-  margin: 0;
-}
-
-nav {
-  display: flex;
-  justify-content: center;
-  gap: 10px;
-  margin: 15px 0;
-}
-
-.tabBtn {
-  padding: 8px 15px;
-  background: #ff9800;
-  color: white;
-  border: none;
-  border-radius: 5px;
-  cursor: pointer;
+  padding: 12px;
+  font-size: 22px;
   font-weight: bold;
-  transition: 0.3s;
 }
 
-.tabBtn:hover {
-  background: #f57c00;
+/* ===============================
+   TOP BUTTONS
+================================ */
+.mode-buttons {
+  display: flex;
+  gap: 10px;
+  padding: 12px;
 }
 
-.tabBtn.activeTab {
+.mode-buttons button {
+  flex: 1;
+  padding: 12px;
+  border: none;
+  border-radius: 8px;
   background: #e65100;
+  color: #fff;
+  font-size: 16px;
 }
 
-.tabSection {
-  display: none;
-  background: white;
-  margin: 10px auto;
-  padding: 15px;
-  max-width: 500px;
-  border-radius: 10px;
-  box-shadow: 0 2px 10px rgba(0,0,0,0.2);
-}
-
+/* ===============================
+   CARD
+================================ */
 .card {
-  background: #ffffff;
-  border-radius: 10px;
-  padding: 15px;
-  margin: 10px 0;
-  box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+  background: #fff;
+  margin: 12px;
+  padding: 12px;
+  border-radius: 12px;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.1);
 }
 
-.headerCard {
+/* ===============================
+   TITLE + COUNT
+================================ */
+.card-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  background: #ffccbc;
+  background: #ffd6c9;
+  padding: 12px;
+  border-radius: 10px;
+  font-size: 16px;
   font-weight: bold;
 }
 
-.scanCount {
-  font-size: 16px;
-  color: #bf360c;
-  margin-top: 5px;
+/* ===============================
+   CAMERA PREVIEW (FINAL FIX)
+================================ */
+.cameraPreview {
+  width: 100%;
+  max-width: 340px;      /* 🔥 medium size */
+  height: 240px;         /* 🔥 medium height */
+  margin: 12px auto;
+  background: #000;
+  border-radius: 12px;
+  overflow: hidden;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
-input, textarea, button {
+/* video / canvas */
+.cameraPreview video,
+.cameraPreview canvas {
+  width: 100% !important;
+  height: 100% !important;
+  object-fit: contain !important;   /* 🔥 full video, no cut */
+  border-radius: 12px;
+}
+
+/* ===============================
+   START / STOP BUTTONS
+================================ */
+.scan-buttons {
+  display: flex;
+  gap: 10px;
+  margin-top: 10px;
+}
+
+.scan-buttons button {
+  flex: 1;
+  padding: 12px;
+  border: none;
+  border-radius: 10px;
+  background: #ff9800;
+  color: #fff;
+  font-size: 16px;
+  font-weight: bold;
+}
+
+/* ===============================
+   TABLE
+================================ */
+table {
   width: 100%;
-  margin: 6px 0;
-  padding: 8px;
-  border-radius: 5px;
+  border-collapse: collapse;
+  margin-top: 12px;
+}
+
+table th,
+table td {
   border: 1px solid #ccc;
+  padding: 8px;
+  text-align: center;
   font-size: 14px;
 }
 
-button {
-  background: #ff9800;
-  color: white;
-  font-weight: bold;
+/* ===============================
+   ACTION BUTTONS
+================================ */
+.action-btn {
+  width: 100%;
+  padding: 12px;
+  margin-top: 10px;
   border: none;
-  transition: 0.3s;
+  border-radius: 10px;
+  background: #ffa000;
+  color: #fff;
+  font-size: 16px;
+  font-weight: bold;
 }
 
-button:hover {
-  background: #f57c00;
-}
-
-#table {
-  width: 100%;
-  border-collapse: collapse;
-  margin-top: 10px;
-}
-
-#table th, #table td {
-  border: 1px solid #ccc;
-  padding: 6px;
+/* ===============================
+   FOOTER
+================================ */
+.footer {
+  background: #ff5a1f;
+  color: #fff;
   text-align: center;
-  font-size: 13px;
-}
-
-.actions {
-  display: flex;
-  justify-content: space-between;
-  gap: 5px;
-  margin-top: 10px;
-  flex-wrap: wrap;
-}
-
-/* ---------- CAMERA PREVIEW + BUTTONS ---------- */
-.cameraCard {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  margin-bottom: 10px;
-}
-
-.cameraPreview {
-  width: 200px;
- /* thoda bada */
-  height: 50%;      /* thoda bada */
-  border-radius: 15x;
-  margin-bottom: 5px;
-  object-fit: cover;
-  border: 1px solid #ccc;
-}
-
-.cameraPreview video {
-  width: 100% !important;
-  height: 100% !important;
-  object-fit: cover;
-}
-
-.scanButtons {
-  display: flex;
-  justify-content: center;
-  gap: 10px;
-  width: 100%;
-  max-width: 400px;  /* match camera width */
-  margin-bottom: 5px;
-}
-
-.scanButtons button {
-  flex: 1;
-  padding: 5px;
-  font-size: 13px;
-}
-
-footer {
-  margin-top: 15px;
-  font-size: 13px;
-  text-align: center;
+  padding: 10px;
+  margin-top: 20px;
 }
