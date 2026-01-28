@@ -1,187 +1,166 @@
-/* General Styling */
 body {
-  font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
   margin: 0;
-  padding: 0;
-  background-color: #f4f7f9;
+  background: #f0f4f8;
   color: #333;
-  text-align: center;
 }
 
-/* Header & Footer */
+/* ---------- HEADER & FOOTER ---------- */
 header, footer {
   background: linear-gradient(135deg, #ff5722, #e64a19);
   color: white;
+  text-align: center;
   padding: 15px 0;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+  box-shadow: 0 2px 5px rgba(0,0,0,0.1);
 }
 
-header h1 { margin: 0; font-size: 1.5rem; letter-spacing: 1px; }
-
-/* Navigation Tabs */
+/* ---------- NAV TABS ---------- */
 nav {
   display: flex;
   justify-content: center;
+  gap: 15px;
   margin: 20px 0;
-  gap: 10px;
 }
 
 .tabBtn {
-  padding: 12px 25px;
-  border: 2px solid #ff5722;
-  background: white;
+  padding: 10px 25px;
+  background: #ffffff;
   color: #ff5722;
-  border-radius: 30px;
+  border: 2px solid #ff5722;
+  border-radius: 25px;
   font-weight: bold;
   cursor: pointer;
-  transition: all 0.3s ease;
+  transition: 0.3s;
 }
 
 .tabBtn.activeTab {
   background: #ff5722;
   color: white;
-  box-shadow: 0 4px 10px rgba(255, 87, 34, 0.3);
 }
 
-/* Section Styling */
+/* ---------- SECTION & CARDS ---------- */
 .tabSection {
   display: none;
-  max-width: 450px;
-  margin: 0 auto 20px auto;
-  padding: 15px;
   background: white;
-  border-radius: 20px;
-  box-shadow: 0 10px 25px rgba(0,0,0,0.05);
+  margin: 10px auto;
+  padding: 20px;
+  max-width: 480px;
+  border-radius: 15px;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.1);
 }
 
 .card {
+  background: #fafafa;
+  border-radius: 12px;
   padding: 15px;
   margin-bottom: 15px;
-  border-radius: 15px;
-  background: #fff;
+  border: 1px solid #eee;
 }
 
-/* ---------- PROFESSIONAL CAMERA UI ---------- */
+/* ---------- CAMERA PREVIEW (PROFESSIONAL) ---------- */
 .cameraPreview {
   display: none; 
-  width: 320px;
-  height: 320px; /* Perfect Square */
+  width: 100%;
+  max-width: 360px;
+  height: 250px;
   background: #000;
-  border-radius: 25px;
+  border-radius: 12px;
   overflow: hidden;
-  margin: 0 auto 20px auto;
+  margin: 15px auto;
   position: relative;
-  border: 5px solid #333;
-  transition: all 0.3s ease;
+  border: 3px solid #ccc;
+  transition: border-color 0.3s ease;
 }
 
-/* Image of a professional QR code scanner interface with a square frame and laser line */
-
-
-/* Laser Scan Line Animation */
+/* Scan Line Animation */
 .cameraPreview::after {
   content: "";
   position: absolute;
-  top: 15%;
-  left: 10%;
-  width: 80%;
-  height: 3px;
-  background: #00ff00;
-  box-shadow: 0 0 15px 5px rgba(0, 255, 0, 0.7);
-  animation: scanMove 1.8s infinite ease-in-out;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 2px;
+  background: rgba(0, 255, 0, 0.7);
+  box-shadow: 0 0 10px 2px rgba(0, 255, 0, 0.5);
+  animation: scanMove 2s infinite linear;
   z-index: 10;
+  display: block;
 }
 
 @keyframes scanMove {
-  0%, 100% { top: 20%; opacity: 0.8; }
-  50% { top: 80%; opacity: 1; }
+  0% { top: 0%; }
+  100% { top: 100%; }
 }
 
-/* Corner Brackets / Square Focus Area */
-.cameraPreview::before {
-  content: "";
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  width: 220px;
-  height: 220px;
-  border: 2px solid rgba(255, 255, 255, 0.5);
-  box-shadow: 0 0 0 500px rgba(0, 0, 0, 0.6); /* Darkens the area outside focus */
-  z-index: 5;
-  border-radius: 20px;
-}
-
-/* Instant Scan Success State */
+/* Detection Flash Effect */
 .scan-success {
-  border-color: #00ff00 !important;
-  transform: scale(1.03);
-  box-shadow: 0 0 30px rgba(0, 255, 0, 0.5);
+  border-color: #4CAF50 !important;
+  box-shadow: 0 0 20px rgba(76, 175, 80, 0.5);
 }
 
-/* ---------- BUTTONS & INPUTS ---------- */
-button {
-  width: 100%;
-  padding: 12px;
-  margin: 5px 0;
-  border-radius: 12px;
-  border: none;
-  font-weight: bold;
-  font-size: 1rem;
-  cursor: pointer;
-  transition: transform 0.1s;
+.cameraPreview video {
+  width: 100% !important;
+  height: 100% !important;
+  object-fit: cover;
 }
 
-button:active { transform: scale(0.97); }
-
-#startScan, #startQR { background: #ff9800; color: white; }
-#stopScan, #stopQR { background: #546e7a; color: white; }
-#submitBtn { background: #4caf50; color: white; margin-top: 15px; }
-#copyBtn, #copyQR { background: #2196f3; color: white; }
-#exportBtn, #exportQR { background: #673ab7; color: white; }
-#syncBtn { background: #ff5722; color: white; border: 2px solid #e64a19; }
-
+/* ---------- INPUTS & BUTTONS ---------- */
 input, textarea {
   width: 100%;
-  padding: 12px;
   margin: 8px 0;
+  padding: 12px;
+  border-radius: 8px;
   border: 1px solid #ddd;
-  border-radius: 10px;
   box-sizing: border-box;
   font-size: 14px;
 }
 
-/* ---------- TABLE DESIGN ---------- */
-.table-wrapper {
-  overflow-x: auto;
-  margin-top: 20px;
+button {
+  width: 100%;
+  padding: 12px;
+  margin: 5px 0;
+  border-radius: 8px;
+  border: none;
+  background: #ff9800;
+  color: white;
+  font-weight: bold;
+  font-size: 15px;
+  cursor: pointer;
+  transition: transform 0.1s, background 0.3s;
 }
 
+button:active { transform: scale(0.98); }
+
+#stopScan, #stopQR { background: #607d8b; }
+#submitBtn { background: #4caf50; margin-top: 10px; }
+#retryBtn { background: #9e9e9e; }
+#syncBtn { background: #2196f3; margin-top: 15px; }
+
+/* ---------- TABLE ---------- */
+.table-wrapper { overflow-x: auto; }
 #table {
   width: 100%;
   border-collapse: collapse;
+  margin-top: 15px;
   background: white;
 }
-
 #table th {
-  background: #f8f9fa;
-  padding: 12px 8px;
-  border-bottom: 2px solid #eee;
-  font-size: 12px;
+  background: #f5f5f5;
   color: #666;
+  font-weight: 600;
+  padding: 12px 8px;
+  border-bottom: 2px solid #ddd;
 }
-
 #table td {
   padding: 10px 5px;
-  border-bottom: 1px solid #f1f1f1;
+  border-bottom: 1px solid #eee;
   font-size: 13px;
 }
 
-/* Flash Effect Overlay */
-.flash-effect {
-  position: fixed;
-  top: 0; left: 0; width: 100%; height: 100%;
-  background: rgba(255, 255, 255, 0.9);
-  z-index: 9999;
-  pointer-events: none;
+/* Delete Button in Table */
+#table button {
+  width: auto;
+  padding: 5px 10px;
+  background: #ff5252;
+  font-size: 12px;
 }
