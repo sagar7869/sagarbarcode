@@ -6,92 +6,148 @@ document.addEventListener("DOMContentLoaded", () => {
   let barcodeScanner = null;
   let qrScanner = null;
 
-  // High Pitch Double Beep Function
-  function playHighBeep() {
-    const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-    const playTone = (freq, start) => {
-      const osc = audioCtx.createOscillator();
-      const gain = audioCtx.createGain();
-      osc.type = "sine";
-      osc.frequency.setValueAtTime(freq, start);
-      gain.gain.setValueAtTime(0.5, start);
-      gain.gain.exponentialRampToValueAtTime(0.01, start + 0.1);
-      osc.connect(gain);
-      gain.connect(audioCtx.destination);
-      osc.start(start);
-      osc.stop(start + 0.1);
-    };
-    playTone(1200, audioCtx.currentTime); // First Beep
-    playTone(1200, audioCtx.currentTime + 0.12); // Second Beep
-  }
+  /* --- TAB SYSTEM --- */
+  const tabs = document.querySelectorAll(".tabBtn");
+  const sections = document.querySelectorAll(".tabSection");
 
-  /* --- FAST SCAN CONFIG --- */
-  const scanConfig = { 
-    fps: 30, // Super fast detection
-    qrbox: { width: 250, height: 250 },
-    aspectRatio: 1.0,
-    videoOptimizer: true 
+  tabs.forEach(btn => {
+    btn.onclick = () => {
+      tabs.forEach(t => t.classList.remove("activeTab"));
+      sections.forEach(s => s.style.display = "none");
+      btn.classList.add("activeTab");
+      document.getElementById(btn.dataset.tab).style.display = "block";
+      
+      // Tab badalte waqt dono camera band karein
+      stopBarcodeCamera();
+      stopQRCamera();
+    };
+  });
+
+  /* --- BARCODE LOGIC --- */
+  document.getElementById("startScan").onclick = () => {
+    const readerElement = document.getElementById("reader");
+    readerElement.style.display = "block";
+    
+    if (!barcodeScanner) {
+        barcodeScanner = new Html5Qrcode("reader");
+    }
+
+    barcodeScanner.start(
+      { facingMode: "environment" }, 
+      { fps: 10, qrbox: 250 }, 
+      code => {
+        stopBarcodeCamera(); // Scan hote hi camera band
+        document.getElementById("entryFields").style.display = "block";
+        document.getElementById("barcode").value = code;
+        document.getElementById("datetime").value = new Date().toLocaleString('en-GB');
+        new Audio("https://www.soundjay.com/button/beep-07.wav").play();
+      }
+    ).catch(err => console.error("Start Error:", err));
   };
 
-  /* --- SCAN SUCCESS HANDLER --- */
-  function onScanSuccess(code, readerId, isQR = false) {
-    const reader = document.getElementById(readerId);
-    reader.classList.add("scan-success");
-    playHighBeep();
-    
-    // Flash Effect
-    const flash = document.createElement("div");
-    flash.className = "flash-effect";
-    document.body.appendChild(flash);
-    setTimeout(() => flash.remove(), 200);
+  // STOP BARCODE BUTTON
+  document.getElementById("stopScan").onclick = () => {
+    stopBarcodeCamera();
+  };
 
-    setTimeout(() => {
-      if(isQR) {
+  function stopBarcodeCamera() {
+    const readerElement = document.getElementById("reader");
+    if (barcodeScanner && barcodeScanner.getState() > 1) { // Check if scanning
+      barcodeScanner.stop().then(() => {
+        barcodeScanner.clear();
+        readerElement.style.display = "none";
+        console.log("Barcode Camera Stopped");
+      }).catch(err => {
+        console.warn("Stop failed, forcing hide:", err);
+        readerElement.style.display = "none";
+      });
+    } else {
+      readerElement.style.display = "none";
+    }
+  }
+
+  /* --- QR LOGIC --- */
+  document.getElementById("startQR").onclick = () => {
+    const qrReaderElement = document.getElementById("qr-reader");
+    qrReaderElement.style.display = "block";
+
+    if (!qrScanner) {
+        qrScanner = new Html5Qrcode("qr-reader");
+    }
+
+    qrScanner.start(
+      { facingMode: "environment" }, 
+      { fps: 10, qrbox: 250 }, 
+      code => {
         stopQRCamera();
         document.getElementById("qrField").value = code;
         qrDataList.push({data: code, time: new Date().toLocaleString()});
         localStorage.setItem("qrDataList", JSON.stringify(qrDataList));
-      } else {
-        stopBarcodeCamera();
-        document.getElementById("entryFields").style.display = "block";
-        document.getElementById("barcode").value = code;
-        document.getElementById("datetime").value = new Date().toLocaleString('en-GB');
+        alert("QR Scanned & Saved!");
       }
-      reader.classList.remove("scan-success");
-    }, 250);
-  }
-
-  /* --- START BARCODE --- */
-  document.getElementById("startScan").onclick = () => {
-    const reader = document.getElementById("reader");
-    reader.style.display = "block";
-    if (!barcodeScanner) barcodeScanner = new Html5Qrcode("reader");
-    barcodeScanner.start({ facingMode: "environment" }, scanConfig, c => onScanSuccess(c, "reader", false));
+    ).catch(err => console.error("QR Start Error:", err));
   };
 
-  /* --- START QR --- */
-  document.getElementById("startQR").onclick = () => {
-    const qrReader = document.getElementById("qr-reader");
-    qrReader.style.display = "block";
-    if (!qrScanner) qrScanner = new Html5Qrcode("qr-reader");
-    qrScanner.start({ facingMode: "environment" }, scanConfig, c => onScanSuccess(c, "qr-reader", true));
+  // STOP QR BUTTON
+  document.getElementById("stopQR").onclick = () => {
+    stopQRCamera();
   };
-
-  /* --- STOP FUNCTIONS --- */
-  function stopBarcodeCamera() {
-    if (barcodeScanner && barcodeScanner.isScanning) {
-      barcodeScanner.stop().then(() => { barcodeScanner.clear(); document.getElementById("reader").style.display = "none"; });
-    } else { document.getElementById("reader").style.display = "none"; }
-  }
 
   function stopQRCamera() {
-    if (qrScanner && qrScanner.isScanning) {
-      qrScanner.stop().then(() => { qrScanner.clear(); document.getElementById("qr-reader").style.display = "none"; });
-    } else { document.getElementById("qr-reader").style.display = "none"; }
+    const qrReaderElement = document.getElementById("qr-reader");
+    if (qrScanner && qrScanner.getState() > 1) {
+      qrScanner.stop().then(() => {
+        qrScanner.clear();
+        qrReaderElement.style.display = "none";
+        console.log("QR Camera Stopped");
+      }).catch(err => {
+        console.warn("QR Stop failed, forcing hide:", err);
+        qrReaderElement.style.display = "none";
+      });
+    } else {
+      qrReaderElement.style.display = "none";
+    }
   }
 
-  document.getElementById("stopScan").onclick = stopBarcodeCamera;
-  document.getElementById("stopQR").onclick = stopQRCamera;
+  /* --- BAAKI FUNCTIONS (Submit, Copy, Export) --- */
+  // ... (Aapka purana Submit, Copy, Export aur Update Table ka code yahan rahega)
+  // Bas dhyan dein ki updateBarcodeTable() function mein 'Module SR NO' column headers sheet ke mutabik ho.
 
-  // ... (Baki purana Submit, Copy, Export, UpdateTable functions yahan rahege)
+  /* --- SUBMIT TO SHEET --- */
+  document.getElementById("submitBtn").onclick = () => {
+    const now = new Date();
+    const entry = {
+      module: document.getElementById("barcode").value,
+      image: document.getElementById("photo").value,
+      remark: document.getElementById("remark").value,
+      date: now.toLocaleDateString('en-GB'),
+      datetime: now.toLocaleString('en-GB')
+    };
+
+    barcodeData.push(entry);
+    localStorage.setItem("barcodeData", JSON.stringify(barcodeData));
+    updateBarcodeTable();
+    
+    fetch(WEBAPP_URL, { method: "POST", mode: "no-cors", body: JSON.stringify(entry) });
+    document.getElementById("entryFields").style.display = "none";
+  };
+
+  function updateBarcodeTable() {
+    const table = document.getElementById("table");
+    table.innerHTML = "<tr><th>Module SR NO</th><th>Image NO</th><th>Remark</th><th>Date</th><th>Date Time</th><th>Del</th></tr>";
+    barcodeData.forEach((e, i) => {
+      const row = table.insertRow(-1);
+      row.innerHTML = `<td>${e.module}</td><td>${e.image}</td><td>${e.remark}</td><td>${e.date || ''}</td><td>${e.datetime}</td>
+      <td><button onclick="deleteRow(${i})" style="background:red; color:white;">X</button></td>`;
+    });
+    document.getElementById("totalCount").innerText = barcodeData.length;
+  }
+
+  window.deleteRow = (i) => {
+    barcodeData.splice(i, 1);
+    localStorage.setItem("barcodeData", JSON.stringify(barcodeData));
+    updateBarcodeTable();
+  };
+
+  updateBarcodeTable();
 });
