@@ -6,7 +6,7 @@ body {
   color: #333;
 }
 
-/* ---------- HEADER & FOOTER ---------- */
+/* HEADER / FOOTER */
 header, footer {
   background: #ff5722;
   color: white;
@@ -14,11 +14,7 @@ header, footer {
   padding: 10px 0;
 }
 
-header h1, footer {
-  margin: 0;
-}
-
-/* ---------- NAV ---------- */
+/* NAV */
 nav {
   display: flex;
   justify-content: center;
@@ -34,13 +30,13 @@ nav {
   border-radius: 5px;
   cursor: pointer;
   font-weight: bold;
-  transition: 0.3s;
 }
 
-.tabBtn:hover { background: #f57c00; }
-.tabBtn.activeTab { background: #e65100; }
+.tabBtn.activeTab {
+  background: #e65100;
+}
 
-/* ---------- SECTION ---------- */
+/* SECTION */
 .tabSection {
   display: none;
   background: white;
@@ -51,9 +47,9 @@ nav {
   box-shadow: 0 2px 10px rgba(0,0,0,0.2);
 }
 
-/* ---------- CARD ---------- */
+/* CARD */
 .card {
-  background: #ffffff;
+  background: #fff;
   border-radius: 10px;
   padding: 15px;
   margin: 10px 0;
@@ -69,19 +65,16 @@ nav {
 }
 
 .scanCount {
-  font-size: 16px;
   color: #bf360c;
-  margin-top: 5px;
 }
 
-/* ---------- FORM ---------- */
+/* FORM */
 input, textarea, button {
   width: 100%;
   margin: 6px 0;
   padding: 8px;
   border-radius: 5px;
   border: 1px solid #ccc;
-  font-size: 14px;
 }
 
 button {
@@ -89,82 +82,39 @@ button {
   color: white;
   font-weight: bold;
   border: none;
-  transition: 0.3s;
 }
 
-button:hover { background: #f57c00; }
+/* CAMERA */
+.cameraPreview {
+  display: none;            /* 🔥 VERY IMPORTANT */
+  width: 100%;
+  max-width: 360px;
+  margin: 10px auto;
+  background: black;
+  border-radius: 10px;
+  overflow: hidden;
+}
 
-/* ---------- TABLE ---------- */
+.cameraPreview video {
+  width: 100% !important;
+  height: auto !important;
+}
+
+/* BUTTON GROUP */
+.scanButtons {
+  display: flex;
+  gap: 10px;
+}
+
+/* TABLE */
 #table {
   width: 100%;
   border-collapse: collapse;
-  margin-top: 10px;
 }
 
 #table th, #table td {
   border: 1px solid #ccc;
   padding: 6px;
-  text-align: center;
-  font-size: 13px;
-}
-
-/* ---------- ACTION BUTTONS ---------- */
-.actions {
-  display: flex;
-  justify-content: space-between;
-  gap: 5px;
-  margin-top: 10px;
-  flex-wrap: wrap;
-}
-
-/* ==================================================
-   CAMERA PREVIEW
-================================================== */
-.cameraCard {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  margin-bottom: 10px;
-}
-
-/* Camera preview box */
-.cameraPreview {
-  width: 100%;
-  max-width: 380px;
-  height: 240px;
-  border-radius: 10px;
-  margin-bottom: 6px;
-  border: 1px solid #ccc;
-  background: #000;
-  overflow: hidden;
-  display: none; /* hidden by default */
-}
-
-.cameraPreview video,
-.cameraPreview canvas {
-  width: 100% !important;
-  height: 100% !important;
-  object-fit: contain !important;
-}
-
-/* Scan buttons */
-.scanButtons {
-  display: flex;
-  justify-content: center;
-  gap: 10px;
-  width: 100%;
-  max-width: 380px;
-  margin-bottom: 5px;
-}
-
-.scanButtons button {
-  flex: 1;
-  padding: 6px;
-  font-size: 13px;
-}
-
-footer {
-  margin-top: 15px;
   font-size: 13px;
   text-align: center;
 }
