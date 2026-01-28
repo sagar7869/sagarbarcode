@@ -1,82 +1,48 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="hi">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>SagarBarcode Pro PWA</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>SagarBarcode Pro</title>
   <link rel="stylesheet" href="style.css">
   <script src="https://unpkg.com/html5-qrcode"></script>
 </head>
 <body>
-
 <header><h1>SagarBarcode Scanner</h1></header>
-
 <nav>
   <button class="tabBtn activeTab" data-tab="barcodeTab">Barcode</button>
   <button class="tabBtn" data-tab="qrTab">QR Code</button>
 </nav>
 
 <section id="barcodeTab" class="tabSection" style="display:block;">
-  <div class="card headerCard">
-    <strong>Barcode Scanner</strong>
-    <div class="scanCount">Total: <span id="totalCount">0</span></div>
+  <div id="reader-container" style="position: relative;">
+      <div id="reader" class="cameraPreview"></div>
+      <div id="zoom-controls" class="internal-zoom" style="display:none;">
+          <button id="zoom-out">− 1x</button>
+          <button id="zoom-in">+ Zoom</button>
+      </div>
   </div>
-
-  <div id="reader" class="cameraPreview"></div>
   
-  <div class="zoom-container">
-    <label>Zoom:</label>
-    <input type="range" id="barcode-zoom" min="1" max="5" step="0.1" value="1">
-  </div>
-
-  <div class="scanButtons">
-    <button id="startScan">Start Barcode</button>
-    <button id="stopScan">Stop Scan</button>
-  </div>
+  <button id="startScan">Start Barcode</button>
+  <button id="stopScan" style="display:none;">Stop Scan</button>
 
   <div id="entryFields" style="display:none;" class="card">
     <input id="barcode" placeholder="Module SR NO">
     <input id="photo" placeholder="Image NO">
     <textarea id="remark" placeholder="Remark"></textarea>
-    <input id="datetime" readonly>
     <button id="submitBtn">Submit to Sheet</button>
-    <button id="retryBtn">Retry</button>
   </div>
 
-  <div class="table-wrapper">
-    <table id="table">
-      <tr><th>Module</th><th>Image</th><th>Remark</th><th>Del</th></tr>
-    </table>
-  </div>
-
-  <div class="actions">
-    <button id="copyBtn">Copy Table</button>
-    <button id="exportBtn">Export CSV</button>
-  </div>
+  <table id="table"></table>
 </section>
 
 <section id="qrTab" class="tabSection">
-  <div class="card headerCard"><strong>QR Code Scanner</strong></div>
-  
   <div id="qr-reader" class="cameraPreview"></div>
-
-  <div class="zoom-container">
-    <label>Zoom:</label>
-    <input type="range" id="qr-zoom" min="1" max="5" step="0.1" value="1">
-  </div>
-
-  <div class="scanButtons">
-    <button id="startQR">Start QR Scan</button>
-    <button id="stopQR">Stop QR Scan</button>
-  </div>
-
-  <div class="card">
-    <input id="qrField" readonly placeholder="QR Data">
-    <button id="copyQR">Copy QR</button>
-  </div>
+  <button id="startQR">Start QR Scan</button>
+  <button id="stopQR" style="display:none;">Stop QR</button>
+  <input id="qrField" readonly placeholder="QR Data">
 </section>
 
-<footer>Design by – Sagar Herole</footer>
 <script src="app.js"></script>
 </body>
 </html>
