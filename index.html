@@ -1,87 +1,81 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>SagarBarcode PWA Pro</title>
-<link rel="stylesheet" href="style.css">
-<script src="https://unpkg.com/html5-qrcode"></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0">
+    <title>SagarBarcode Pro Scanner</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://unpkg.com/html5-qrcode"></script>
 </head>
 <body>
 
 <header>
-  <h1>SagarBarcode Scanner</h1>
+    <h1>SagarBarcode Scanner</h1>
 </header>
 
 <nav>
-  <button class="tabBtn activeTab" data-tab="barcodeTab">Barcode</button>
-  <button class="tabBtn" data-tab="qrTab">QR Code</button>
+    <button class="tabBtn activeTab" data-tab="barcodeTab">Barcode</button>
+    <button class="tabBtn" data-tab="qrTab">QR Code</button>
 </nav>
 
 <section id="barcodeTab" class="tabSection" style="display:block;">
-  <div class="card headerCard">
-    <strong>Barcode Scanner</strong>
-    <div class="scanCount">Total Scans: <span id="totalCount">0</span></div>
-  </div>
-
-  <div class="card cameraCard">
-    <div id="reader" class="cameraPreview">
-        <div class="camera-overlay">
-            <button id="torchBtn" class="overlay-btn">🔦</button>
-            <div class="zoom-slider-container">
-                <span class="zoom-icon">+</span>
-                <input type="range" id="zoomRange" min="1" max="5" step="0.1" value="1">
-                <span class="zoom-icon">−</span>
+    <div class="card cameraCard">
+        <div id="reader" class="cameraPreview">
+            <div class="camera-controls-overlay">
+                <button id="torchBtn" class="overlay-icon-btn">🔦</button>
+                <div class="zoom-slider-overlay">
+                    <span class="z-icon">−</span>
+                    <input type="range" id="zoomRange" min="1" max="5" step="0.1" value="1">
+                    <span class="z-icon">+</span>
+                </div>
             </div>
         </div>
-    </div>
-    
-    <div class="scanButtons">
-      <button id="startScan">Start Scan</button>
-      <button id="stopScan">Stop Scan</button>
+        
+        <div class="scanButtons">
+            <button id="startScan" class="primary-btn">Start Scan</button>
+            <button id="stopScan" class="secondary-btn">Stop Scan</button>
+        </div>
+
+        <div id="entryFields" style="display:none;" class="entry-card">
+            <input id="barcode" placeholder="Serial Number">
+            <input id="photo" placeholder="Photo Number">
+            <textarea id="remark" placeholder="Remark"></textarea>
+            <input id="datetime" readonly>
+            <button id="submitBtn">Submit Data</button>
+            <button id="retryBtn">Retry / Rescan</button>
+        </div>
     </div>
 
-    <div id="entryFields" style="display:none;">
-      <input id="barcode" placeholder="Serial Number">
-      <input id="photo" placeholder="Photo Number">
-      <textarea id="remark" placeholder="Remark"></textarea>
-      <input id="datetime" readonly>
-      <button id="submitBtn">Submit</button>
-      <button id="retryBtn">Retry / Rescan</button>
+    <div class="table-container">
+        <table id="table">
+            <thead>
+                <tr><th>Serial</th><th>Photo</th><th>Remark</th><th>Time</th><th>Del</th></tr>
+            </thead>
+            <tbody id="tableBody"></tbody>
+        </table>
     </div>
-  </div>
 
-  <div class="table-wrapper">
-    <table id="table">
-      <tr><th>Serial</th><th>Photo</th><th>Remark</th><th>Time</th><th>Del</th></tr>
-    </table>
-  </div>
-
-  <div class="actions">
-    <button id="copyBtn">Copy Table</button>
-    <button id="exportBtn">Export CSV</button>
-    <button id="syncBtn">Update Google Sheet</button>
-  </div>
+    <div class="bottom-actions">
+        <div class="stats">Total: <span id="totalCount">0</span></div>
+        <button id="copyBtn">Copy Table</button>
+        <button id="exportBtn">Export CSV</button>
+        <button id="syncBtn">Update Google Sheet</button>
+    </div>
 </section>
 
 <section id="qrTab" class="tabSection">
-  <div class="card headerCard"><strong>QR Code Scanner</strong></div>
-  <div class="card cameraCard">
-    <div id="qr-reader" class="cameraPreview">
-        <div class="camera-overlay">
-            <button id="torchBtnQR" class="overlay-btn">🔦</button>
+    <div class="card cameraCard">
+        <div id="qr-reader" class="cameraPreview">
+            <div class="camera-controls-overlay">
+                <button id="torchBtnQR" class="overlay-icon-btn">🔦</button>
+            </div>
+        </div>
+        <input id="qrField" readonly placeholder="QR Data Result">
+        <div class="scanButtons">
+            <button id="startQR" class="primary-btn">Start QR Scan</button>
+            <button id="stopQR" class="secondary-btn">Stop QR Scan</button>
         </div>
     </div>
-    <input id="qrField" readonly placeholder="QR Data" style="margin-top:10px;">
-    <div class="scanButtons">
-      <button id="startQR">Start QR Scan</button>
-      <button id="stopQR">Stop QR Scan</button>
-    </div>
-  </div>
-  <div class="actions">
-    <button id="copyQR">Copy</button>
-    <button id="exportQR">Export CSV</button>
-  </div>
 </section>
 
 <footer>Design by – Sagar Herole</footer>
