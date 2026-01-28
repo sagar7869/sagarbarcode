@@ -1,33 +1,32 @@
-body { font-family: sans-serif; margin: 0; background: #f0f4f8; text-align: center; }
-header, footer { background: #ff5722; color: white; padding: 15px; }
-nav { display: flex; justify-content: center; gap: 10px; margin: 15px; }
+body { font-family: sans-serif; margin: 0; background: #fafafa; text-align: center; }
+header { background: #ff5722; color: white; padding: 15px; font-size: 20px; }
+nav { display: flex; justify-content: center; gap: 10px; margin: 10px; }
+.tabBtn { padding: 8px 20px; border-radius: 20px; border: 1px solid #ff5722; background: #fff; }
+.activeTab { background: #ff5722; color: #fff; }
 
-.tabBtn { padding: 10px 20px; border-radius: 20px; border: 2px solid #ff5722; background: white; cursor: pointer; font-weight: bold; }
-.tabBtn.activeTab { background: #ff5722; color: white; }
-
-.tabSection { display: none; max-width: 400px; margin: auto; padding: 10px; background: white; border-radius: 15px; }
-
-/* Camera UI */
-.cameraPreview {
-  width: 320px; height: 320px; background: #000; margin: auto;
-  border-radius: 20px; border: 4px solid #333; position: relative; overflow: hidden; display: none;
+.cameraPreview { 
+    width: 100%; max-width: 350px; height: 350px; margin: auto; 
+    border-radius: 15px; overflow: hidden; background: #000;
+    border: 4px solid #333; position: relative;
 }
-.cameraPreview::after {
-  content: ""; position: absolute; top: 20%; left: 10%; width: 80%; height: 3px;
-  background: #00ff00; box-shadow: 0 0 10px #00ff00; animation: scan 1.5s infinite; z-index: 10;
+
+/* Object Detection Corners (Green Box) */
+.cameraPreview::before {
+    content: ""; position: absolute; top: 20%; left: 20%; width: 60%; height: 60%;
+    border: 2px solid rgba(0, 255, 0, 0.5); border-radius: 10px; z-index: 5;
+    box-shadow: 0 0 0 1000px rgba(0,0,0,0.4); /* Focus Effect */
 }
-@keyframes scan { 0%, 100% { top: 20%; } 50% { top: 80%; } }
 
-.zoom-container { display: flex; align-items: center; justify-content: center; gap: 10px; margin: 10px; font-weight: bold; color: #ff5722; }
-.scan-success { border-color: #00ff00 !important; transform: scale(1.02); transition: 0.2s; }
+/* Internal Zoom Buttons */
+.internal-zoom {
+    position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%);
+    display: flex; gap: 10px; z-index: 100;
+}
+.internal-zoom button {
+    background: rgba(0,0,0,0.6); color: white; border: 1px solid #fff;
+    padding: 10px 15px; border-radius: 50px; width: auto !important;
+}
 
-/* Flash Effect */
-.flash-effect { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: white; z-index: 9999; opacity: 0.8; }
-
-input, textarea, button { width: 100%; padding: 12px; margin: 5px 0; border-radius: 8px; border: 1px solid #ddd; box-sizing: border-box; }
-button { background: #ff9800; color: white; border: none; font-weight: bold; cursor: pointer; }
-#submitBtn { background: #4caf50; }
-#stopScan, #stopQR { background: #607d8b; }
-
-#table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 12px; }
-#table th, #table td { border-bottom: 1px solid #eee; padding: 8px; }
+#table { width: 100%; margin-top: 20px; border-collapse: collapse; }
+input, textarea, button { width: 90%; padding: 12px; margin: 5px; border-radius: 8px; border: 1px solid #ccc; }
+#startScan, #startQR { background: #ff9800; color: white; font-weight: bold; }
