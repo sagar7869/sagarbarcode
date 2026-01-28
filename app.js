@@ -2,93 +2,147 @@ const WEBAPP_URL = "https://script.google.com/macros/s/AKfycbybuMNHEyOEtOzLICttG
 
 document.addEventListener("DOMContentLoaded", () => {
     let barcodeData = JSON.parse(localStorage.getItem("barcodeData") || "[]");
-    let scanner = null;
+    let qrDataList = JSON.parse(localStorage.getItem("qrDataList") || "[]");
+    let barcodeScanner = null;
     let qrScanner = null;
     let audioCtx = null;
-    let zoomLevel = 1;
+    let isProcessing = false;
 
-    // Sharp Beep Sound
-    function playBeep() {
-        if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-        if (audioCtx.state === 'suspended') audioCtx.resume();
-        const osc = audioCtx.createOscillator();
-        const gain = audioCtx.createGain();
-        osc.type = "sine"; osc.frequency.value = 2200;
-        osc.connect(gain); gain.connect(audioCtx.destination);
-        osc.start(); osc.stop(audioCtx.currentTime + 0.1);
+    // --- HIGH PITCH SHARP BEEP LOGIC ---
+    function playHighBeep() {
+        try {
+            // Audio Context initialize/resume
+            if (!audioCtx) {
+                audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            }
+            if (audioCtx.state === 'suspended') {
+                audioCtx.resume();
+            }
+
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            
+            osc.type = "sine";
+            osc.frequency.setValueAtTime(2500, audioCtx.currentTime); // Bahut sharp sound (2500Hz)
+            
+            gain.gain.setValueAtTime(0.6, audioCtx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.15);
+            
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+            
+            osc.start();
+            osc.stop(audioCtx.currentTime + 0.15);
+        } catch (e) {
+            console.error("Audio error:", e);
+        }
     }
 
-    const config = { 
+    const scanConfig = { 
         fps: 25, 
-        qrbox: { width: 250, height: 250 }, 
-        videoConstraints: { focusMode: "continuous" } 
+        qrbox: { width: 250, height: 250 },
+        aspectRatio: 1.0
     };
 
-    // --- Barcode Scanner Logic ---
-    document.getElementById("startScan").onclick = () => {
-        if (audioCtx) audioCtx.resume();
-        document.getElementById("zoom-overlay").style.display = "flex";
-        document.getElementById("startScan").style.display = "none";
-        document.getElementById("stopScan").style.display = "block";
+    // --- SCAN SUCCESS HANDLER ---
+    async function onScanSuccess(code, readerId, isQR = false) {
+        if (isProcessing) return;
+        isProcessing = true; 
 
-        scanner = new Html5Qrcode("reader");
-        scanner.start({ facingMode: "environment" }, config, (code) => {
-            playBeep();
-            scanner.stop().then(() => {
-                document.getElementById("entryFields").style.display = "block";
-                document.getElementById("barcode").value = code;
-                document.getElementById("zoom-overlay").style.display = "none";
-                document.getElementById("stopScan").style.display = "none";
-                document.getElementById("startScan").style.display = "block";
-            });
-        }).then(() => {
-            const track = scanner.getRunningTrack();
-            const caps = track.getCapabilities();
-            if (caps.zoom) {
-                document.getElementById("btn-zoom-in").onclick = () => {
-                    if (zoomLevel < caps.zoom.max) zoomLevel += 0.5;
-                    track.applyConstraints({ advanced: [{ zoom: zoomLevel }] });
-                };
-                document.getElementById("btn-zoom-out").onclick = () => {
-                    zoomLevel = 1;
-                    track.applyConstraints({ advanced: [{ zoom: zoomLevel }] });
-                };
-            }
-        });
-    };
+        playHighBeep(); // Yahan beep bajega
+        if (navigator.vibrate) navigator.vibrate(100); // Halki vibration feedback
+        
+        const reader = document.getElementById(readerId);
+        reader.classList.add("scan-success");
 
-    document.getElementById("stopScan").onclick = () => {
-        if (scanner) {
-            scanner.stop().then(() => {
-                document.getElementById("zoom-overlay").style.display = "none";
-                document.getElementById("stopScan").style.display = "none";
-                document.getElementById("startScan").style.display = "block";
-            });
+        // Visual Flash
+        const flash = document.createElement("div");
+        flash.className = "flash-effect";
+        document.body.appendChild(flash);
+        setTimeout(() => flash.remove(), 100);
+
+        // Scanner Stop logic
+        if (isQR) {
+            await stopQRCamera();
+            document.getElementById("qrField").value = code;
+            qrDataList.push({data: code, time: new Date().toLocaleString()});
+            localStorage.setItem("qrDataList", JSON.stringify(qrDataList));
+        } else {
+            await stopBarcodeCamera();
+            document.getElementById("entryFields").style.display = "block";
+            document.getElementById("barcode").value = code;
+            document.getElementById("datetime").value = new Date().toLocaleString('en-GB');
         }
+        
+        reader.classList.remove("scan-success");
+        isProcessing = false;
+    }
+
+    /* --- START BUTTONS MEIN AUDIO RESUME DALA HAI --- */
+    document.getElementById("startScan").onclick = () => {
+        // Audio permission ke liye zaroori hai
+        if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        if (audioCtx.state === 'suspended') audioCtx.resume();
+        
+        isProcessing = false;
+        const reader = document.getElementById("reader");
+        reader.style.display = "block";
+        if (!barcodeScanner) barcodeScanner = new Html5Qrcode("reader");
+        barcodeScanner.start({ facingMode: "environment" }, scanConfig, c => onScanSuccess(c, "reader", false));
     };
 
-    // --- Submit Logic ---
+    document.getElementById("startQR").onclick = () => {
+        if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        if (audioCtx.state === 'suspended') audioCtx.resume();
+
+        isProcessing = false;
+        const qrReader = document.getElementById("qr-reader");
+        qrReader.style.display = "block";
+        if (!qrScanner) qrScanner = new Html5Qrcode("qr-reader");
+        qrScanner.start({ facingMode: "environment" }, scanConfig, c => onScanSuccess(c, "qr-reader", true));
+    };
+
+    async function stopBarcodeCamera() {
+        if (barcodeScanner && barcodeScanner.isScanning) {
+            await barcodeScanner.stop();
+            barcodeScanner.clear();
+        }
+        document.getElementById("reader").style.display = "none";
+    }
+
+    async function stopQRCamera() {
+        if (qrScanner && qrScanner.isScanning) {
+            await qrScanner.stop();
+            qrScanner.clear();
+        }
+        document.getElementById("qr-reader").style.display = "none";
+    }
+
+    document.getElementById("stopScan").onclick = stopBarcodeCamera;
+    document.getElementById("stopQR").onclick = stopQRCamera;
+
+    // ... (Baaki submit aur update table functions wahi rahenge)
     document.getElementById("submitBtn").onclick = () => {
         const entry = {
             module: document.getElementById("barcode").value,
             image: document.getElementById("photo").value,
             remark: document.getElementById("remark").value,
-            datetime: new Date().toLocaleString()
+            datetime: new Date().toLocaleString('en-GB')
         };
         barcodeData.push(entry);
         localStorage.setItem("barcodeData", JSON.stringify(barcodeData));
-        updateTable();
+        updateBarcodeTable();
         fetch(WEBAPP_URL, { method: "POST", mode: "no-cors", body: JSON.stringify(entry) });
         document.getElementById("entryFields").style.display = "none";
     };
 
-    function updateTable() {
+    function updateBarcodeTable() {
         const table = document.getElementById("table");
-        table.innerHTML = "<tr><th>Serial</th><th>Image</th><th>Remark</th><th>X</th></tr>";
-        barcodeData.slice().reverse().forEach((e, i) => {
+        table.innerHTML = "<tr><th>Serial</th><th>Photo</th><th>Remark</th><th>DateTime</th><th>Del</th></tr>";
+        barcodeData.forEach((e, i) => {
             const row = table.insertRow(-1);
-            row.innerHTML = `<td>${e.module}</td><td>${e.image}</td><td>${e.remark}</td>
-            <td><button onclick="deleteRow(${barcodeData.length - 1 - i})" style="background:red;color:white;border:none;padding:5px;">X</button></td>`;
+            row.innerHTML = `<td>${e.module}</td><td>${e.image}</td><td>${e.remark}</td><td>${e.datetime}</td>
+            <td><button onclick="deleteRow(${i})" style="background:red; color:white; width:auto;">X</button></td>`;
         });
         document.getElementById("totalCount").innerText = barcodeData.length;
     }
@@ -96,18 +150,8 @@ document.addEventListener("DOMContentLoaded", () => {
     window.deleteRow = (i) => {
         barcodeData.splice(i, 1);
         localStorage.setItem("barcodeData", JSON.stringify(barcodeData));
-        updateTable();
+        updateBarcodeTable();
     };
 
-    // --- Tab Switching ---
-    document.querySelectorAll(".tabBtn").forEach(btn => {
-        btn.onclick = () => {
-            document.querySelectorAll(".tabBtn").forEach(t => t.classList.remove("activeTab"));
-            btn.classList.add("activeTab");
-            document.querySelectorAll(".tabSection").forEach(s => s.style.display = "none");
-            document.getElementById(btn.dataset.tab).style.display = "block";
-        };
-    });
-
-    updateTable();
+    updateBarcodeTable();
 });
