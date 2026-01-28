@@ -2,7 +2,7 @@ const WEBAPP_URL = "https://script.google.com/macros/s/AKfycbzT7ezPZ79p5AO88LAiL
 
 document.addEventListener("DOMContentLoaded", () => {
 
-  /* ---------------- TAB ---------------- */
+  /* ---------- TABS ---------- */
   const tabs = document.querySelectorAll(".tabBtn");
   const sections = document.querySelectorAll(".tabSection");
 
@@ -14,92 +14,118 @@ document.addEventListener("DOMContentLoaded", () => {
       document.getElementById(btn.dataset.tab).style.display = "block";
     };
   });
+  tabs[0].click();
 
-  tabs[0].click(); // default open
+  const beep = new Audio("https://www.soundjay.com/button/beep-07.wav");
 
-  /* ---------------- BARCODE ---------------- */
-  let barcodeScanner = null;
+  /* ==================================================
+     BARCODE
+  ================================================== */
+  let scanner = null;
   let barcodeData = JSON.parse(localStorage.getItem("barcodeData") || "[]");
 
-  document.getElementById("startScan").onclick = async () => {
-    const reader = document.getElementById("reader");
+  updateBarcodeTable();
+
+  startScan.onclick = async () => {
     reader.style.display = "block";
 
     await new Promise(r => setTimeout(r, 300));
 
-    if (barcodeScanner) {
-      await barcodeScanner.clear().catch(()=>{});
+    if (scanner) {
+      await scanner.clear().catch(()=>{});
+      scanner = null;
     }
 
-    barcodeScanner = new Html5Qrcode("reader");
+    scanner = new Html5Qrcode("reader");
 
-    barcodeScanner.start(
+    scanner.start(
       { facingMode: "environment" },
-      { fps: 12, qrbox: { width: 300, height: 120 } },
+      { fps: 12, qrbox: 220 },
       async (code) => {
-        await barcodeScanner.stop();
-        reader.style.display = "none";
+        beep.play();
+        await scanner.stop();
+        await scanner.clear();
+        scanner = null;
 
-        document.getElementById("entryFields").style.display = "block";
-        barcode.value = code;
-        photo.value = "";
-        remark.value = "";
-        datetime.value = new Date().toLocaleString("en-GB");
+        reader.style.display = "none";
+        showFields(code);
       }
     );
   };
 
-  document.getElementById("stopScan").onclick = async () => {
-    if (barcodeScanner) {
-      await barcodeScanner.stop().catch(()=>{});
-      document.getElementById("reader").style.display = "none";
+  stopScan.onclick = async () => {
+    if (scanner) {
+      await scanner.stop().catch(()=>{});
+      await scanner.clear().catch(()=>{});
+      scanner = null;
+      reader.style.display = "none";
     }
+  };
+
+  function showFields(code) {
+    entryFields.style.display = "block";
+    barcode.value = code;
+    photo.value = "";
+    remark.value = "";
+    datetime.value = new Date().toLocaleString("en-GB");
+  }
+
+  retryBtn.onclick = () => {
+    entryFields.style.display = "none";
   };
 
   submitBtn.onclick = () => {
     if (!barcode.value) return alert("Scan first");
 
-    barcodeData.push({
+    const e = {
       barcode: barcode.value,
       photo: photo.value,
       remark: remark.value,
       datetime: datetime.value
-    });
+    };
 
+    barcodeData.push(e);
     localStorage.setItem("barcodeData", JSON.stringify(barcodeData));
-    updateTable();
-    entryFields.style.display = "none";
+    updateBarcodeTable();
   };
 
-  function updateTable() {
+  function updateBarcodeTable() {
     table.innerHTML =
-      "<tr><th>Serial</th><th>Photo</th><th>Remark</th><th>Date</th></tr>";
-
-    barcodeData.forEach(e => {
+      "<tr><th>Serial</th><th>Photo</th><th>Remark</th><th>Date</th><th>Del</th></tr>";
+    barcodeData.forEach((e, i) => {
       const r = table.insertRow();
       r.insertCell(0).innerText = e.barcode;
       r.insertCell(1).innerText = e.photo;
       r.insertCell(2).innerText = e.remark;
       r.insertCell(3).innerText = e.datetime;
+      const d = r.insertCell(4);
+      const b = document.createElement("button");
+      b.innerText = "X";
+      b.onclick = () => {
+        barcodeData.splice(i, 1);
+        localStorage.setItem("barcodeData", JSON.stringify(barcodeData));
+        updateBarcodeTable();
+      };
+      d.appendChild(b);
     });
-
     totalCount.innerText = barcodeData.length;
   }
 
-  updateTable();
-
-  /* ---------------- QR ---------------- */
+  /* ==================================================
+     QR CODE (FIXED RESTART ISSUE)
+  ================================================== */
   let qrScanner = null;
   let qrData = JSON.parse(localStorage.getItem("qrData") || "[]");
+  totalQRCount.innerText = qrData.length;
 
-  document.getElementById("startQR").onclick = async () => {
-    const qrReader = document.getElementById("qr-reader");
-    qrReader.style.display = "block";
+  startQR.onclick = async () => {
+    qr-reader.style.display = "block";
 
     await new Promise(r => setTimeout(r, 300));
 
     if (qrScanner) {
       await qrScanner.clear().catch(()=>{});
+      qrScanner = null;
     }
 
     qrScanner = new Html5Qrcode("qr-reader");
@@ -108,8 +134,12 @@ document.addEventListener("DOMContentLoaded", () => {
       { facingMode: "environment" },
       { fps: 12, qrbox: 220 },
       async (code) => {
+        beep.play();
         await qrScanner.stop();
-        qrReader.style.display = "none";
+        await qrScanner.clear();
+        qrScanner = null;
+
+        qr-reader.style.display = "none";
         qrField.value = code;
 
         qrData.push(code);
@@ -119,10 +149,12 @@ document.addEventListener("DOMContentLoaded", () => {
     );
   };
 
-  document.getElementById("stopQR").onclick = async () => {
+  stopQR.onclick = async () => {
     if (qrScanner) {
       await qrScanner.stop().catch(()=>{});
-      document.getElementById("qr-reader").style.display = "none";
+      await qrScanner.clear().catch(()=>{});
+      qrScanner = null;
+      qr-reader.style.display = "none";
     }
   };
 
