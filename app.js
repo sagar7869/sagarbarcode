@@ -6,27 +6,36 @@ document.addEventListener("DOMContentLoaded", () => {
     let barcodeScanner = null;
     let qrScanner = null;
     let audioCtx = null;
-    let isProcessing = false; // Isse code baar-baar scan nahi hoga aur rukega nahi
+    let isProcessing = false;
 
-    // --- HIGH PITCH BEEP (FASTEST VERSION) ---
+    // --- HIGH PITCH SHARP BEEP LOGIC ---
     function playHighBeep() {
         try {
-            if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-            if (audioCtx.state === 'suspended') audioCtx.resume();
+            // Audio Context initialize/resume
+            if (!audioCtx) {
+                audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            }
+            if (audioCtx.state === 'suspended') {
+                audioCtx.resume();
+            }
 
             const osc = audioCtx.createOscillator();
             const gain = audioCtx.createGain();
             
             osc.type = "sine";
-            osc.frequency.setValueAtTime(1800, audioCtx.currentTime); // Sharp High Tone
-            gain.gain.setValueAtTime(0.5, audioCtx.currentTime);
-            gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.1);
+            osc.frequency.setValueAtTime(2500, audioCtx.currentTime); // Bahut sharp sound (2500Hz)
+            
+            gain.gain.setValueAtTime(0.6, audioCtx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.15);
             
             osc.connect(gain);
             gain.connect(audioCtx.destination);
+            
             osc.start();
-            osc.stop(audioCtx.currentTime + 0.1);
-        } catch (e) { console.log("Audio error"); }
+            osc.stop(audioCtx.currentTime + 0.15);
+        } catch (e) {
+            console.error("Audio error:", e);
+        }
     }
 
     const scanConfig = { 
@@ -37,21 +46,22 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // --- SCAN SUCCESS HANDLER ---
     async function onScanSuccess(code, readerId, isQR = false) {
-        if (isProcessing) return; // Agar ek baar scan ho gaya toh ruk jao
+        if (isProcessing) return;
         isProcessing = true; 
 
-        playHighBeep(); // Pehle Beep bajao
+        playHighBeep(); // Yahan beep bajega
+        if (navigator.vibrate) navigator.vibrate(100); // Halki vibration feedback
         
         const reader = document.getElementById(readerId);
         reader.classList.add("scan-success");
 
-        // Flash Effect
+        // Visual Flash
         const flash = document.createElement("div");
         flash.className = "flash-effect";
         document.body.appendChild(flash);
         setTimeout(() => flash.remove(), 100);
 
-        // Turant Scanner Stop karo taaki loop na bane
+        // Scanner Stop logic
         if (isQR) {
             await stopQRCamera();
             document.getElementById("qrField").value = code;
@@ -65,11 +75,15 @@ document.addEventListener("DOMContentLoaded", () => {
         }
         
         reader.classList.remove("scan-success");
-        isProcessing = false; // Next scan ke liye taiyar
+        isProcessing = false;
     }
 
-    /* --- START/STOP LOGIC --- */
+    /* --- START BUTTONS MEIN AUDIO RESUME DALA HAI --- */
     document.getElementById("startScan").onclick = () => {
+        // Audio permission ke liye zaroori hai
+        if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        if (audioCtx.state === 'suspended') audioCtx.resume();
+        
         isProcessing = false;
         const reader = document.getElementById("reader");
         reader.style.display = "block";
@@ -78,6 +92,9 @@ document.addEventListener("DOMContentLoaded", () => {
     };
 
     document.getElementById("startQR").onclick = () => {
+        if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        if (audioCtx.state === 'suspended') audioCtx.resume();
+
         isProcessing = false;
         const qrReader = document.getElementById("qr-reader");
         qrReader.style.display = "block";
@@ -104,7 +121,7 @@ document.addEventListener("DOMContentLoaded", () => {
     document.getElementById("stopScan").onclick = stopBarcodeCamera;
     document.getElementById("stopQR").onclick = stopQRCamera;
 
-    /* --- DATA SUBMIT --- */
+    // ... (Baaki submit aur update table functions wahi rahenge)
     document.getElementById("submitBtn").onclick = () => {
         const entry = {
             module: document.getElementById("barcode").value,
