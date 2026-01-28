@@ -55,25 +55,14 @@ nav {
   box-shadow: 0 2px 6px rgba(0,0,0,0.15);
 }
 
-.headerCard {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  background: #ffccbc;
-}
-
-.scanCount {
-  color: #bf360c;
-  font-weight: bold;
-}
-
-/* ---------- INPUT ---------- */
+/* ---------- INPUT & BUTTONS ---------- */
 input, textarea, button {
   width: 100%;
   margin: 6px 0;
-  padding: 8px;
+  padding: 10px;
   border-radius: 5px;
   border: 1px solid #ccc;
+  box-sizing: border-box; /* Isse input screen se bahar nahi jayega */
 }
 
 button {
@@ -81,6 +70,31 @@ button {
   color: white;
   font-weight: bold;
   border: none;
+}
+
+/* Table Delete Button */
+#table button {
+  background: #f44336;
+  width: auto;
+  padding: 5px 10px;
+}
+
+/* ---------- CAMERA PREVIEW ---------- */
+.cameraPreview {
+  display: none; 
+  width: 100%;
+  max-width: 360px;
+  height: 240px;
+  background: black;
+  border-radius: 10px;
+  overflow: hidden;
+  margin: 10px auto;
+}
+
+.cameraPreview video {
+  width: 100% !important;
+  height: 100% !important;
+  object-fit: cover !important;
 }
 
 /* ---------- TABLE ---------- */
@@ -94,32 +108,4 @@ button {
   padding: 6px;
   font-size: 13px;
   text-align: center;
-}
-
-/* ---------- CAMERA ---------- */
-.cameraPreview {
-  display: none;                 /* 🔥 only when scanning */
-  width: 100%;
-  max-width: 360px;
-  height: 240px;                 /* 🔥 fixed */
-  background: black;
-  border-radius: 10px;
-  overflow: hidden;
-  margin: 10px auto;
-}
-
-.cameraPreview video {
-  width: 100% !important;
-  height: 100% !important;
-  object-fit: cover !important;  /* 🔥 FULL BOX */
-}
-
-.scanButtons {
-  display: flex;
-  gap: 10px;
-}
-
-footer {
-  margin-top: 15px;
-  font-size: 13px;
 }
