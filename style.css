@@ -1,38 +1,219 @@
-body { font-family: sans-serif; margin: 0; padding: 0; background: #f4f4f4; text-align: center; }
-header { background: #333; color: white; padding: 10px; }
-nav { display: flex; justify-content: space-around; background: #eee; padding: 10px; }
-.tabBtn { padding: 10px 20px; border: none; cursor: pointer; background: #ddd; font-weight: bold; border-radius: 5px; }
-.activeTab { background: #333; color: white; }
-.tabSection { padding: 15px; display: none; }
-.card { background: white; padding: 15px; margin-bottom: 15px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
-.cameraPreview { width: 100%; max-width: 400px; margin: 0 auto; min-height: 250px; background: #000; border-radius: 8px; overflow: hidden; }
-
-/* Stylish Flashlight Button */
-.torch-btn {
-  position: absolute;
-  top: 15px;
-  right: 15px;
-  width: 45px !important;
-  height: 45px !important;
-  background: rgba(0, 0, 0, 0.5) !important;
-  color: white;
-  border-radius: 50% !important;
-  border: 2px solid #fff !important;
-  z-index: 999;
-  font-size: 20px;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  box-shadow: 0 0 10px rgba(0,0,0,0.5);
+/* General Styling */
+body {
+  font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  margin: 0;
+  padding: 0;
+  background-color: #f4f7f9;
+  color: #333;
+  text-align: center;
 }
 
-input, textarea { width: 90%; padding: 10px; margin: 10px 0; border: 1px solid #ccc; border-radius: 5px; }
-button { width: 90%; padding: 12px; margin: 5px 0; border: none; border-radius: 5px; background: #007bff; color: white; cursor: pointer; font-size: 16px; }
-button:active { background: #0056b3; }
-#stopScan, #stopQR { background: #dc3545; }
-.table-wrapper { overflow-x: auto; background: white; margin-top: 15px; border-radius: 8px; }
-table { width: 100%; border-collapse: collapse; }
-th, td { border: 1px solid #ddd; padding: 10px; text-align: left; }
-th { background: #eee; }
-footer { padding: 20px; color: #777; font-size: 12px; }
+/* Header & Footer */
+header, footer {
+  background: linear-gradient(135deg, #ff5722, #e64a19);
+  color: white;
+  padding: 15px 0;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+}
+
+header h1 {
+  margin: 0;
+  font-size: 1.5rem;
+  letter-spacing: 1px;
+}
+
+/* Navigation Tabs */
+nav {
+  display: flex;
+  justify-content: center;
+  margin: 20px 0;
+  gap: 10px;
+}
+
+.tabBtn {
+  padding: 12px 25px;
+  border: 2px solid #ff5722;
+  background: white;
+  color: #ff5722;
+  border-radius: 30px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.tabBtn.activeTab {
+  background: #ff5722;
+  color: white;
+  box-shadow: 0 4px 10px rgba(255, 87, 34, 0.3);
+}
+
+/* Section Styling */
+.tabSection {
+  display: none;
+  max-width: 450px;
+  margin: 0 auto 20px auto;
+  padding: 15px;
+  background: white;
+  border-radius: 20px;
+  box-shadow: 0 10px 25px rgba(0,0,0,0.05);
+}
+
+.card {
+  padding: 15px;
+  margin-bottom: 15px;
+  border-radius: 15px;
+  background: #fff;
+}
+
+/* ---------- PROFESSIONAL CAMERA UI ---------- */
+.cameraPreview {
+  display: none;
+  width: 320px;
+  height: 320px;
+  background: #000;
+  border-radius: 25px;
+  overflow: hidden;
+  margin: 0 auto 20px auto;
+  position: relative;
+  border: 5px solid #333;
+  transition: all 0.3s ease;
+}
+
+/* Laser Scan Line Animation */
+.cameraPreview::after {
+  content: "";
+  position: absolute;
+  top: 15%;
+  left: 10%;
+  width: 80%;
+  height: 3px;
+  background: #00ff00;
+  box-shadow: 0 0 15px 5px rgba(0, 255, 0, 0.7);
+  animation: scanMove 1.8s infinite ease-in-out;
+  z-index: 10;
+}
+
+@keyframes scanMove {
+  0%, 100% { top: 20%; opacity: 0.8; }
+  50% { top: 80%; opacity: 1; }
+}
+
+/* Corner Brackets / Square Focus Area */
+.cameraPreview::before {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 220px;
+  height: 220px;
+  border: 2px solid rgba(255, 255, 255, 0.5);
+  box-shadow: 0 0 0 500px rgba(0, 0, 0, 0.6);
+  z-index: 5;
+  border-radius: 20px;
+}
+
+/* Instant Scan Success State */
+.scan-success {
+  border-color: #00ff00 !important;
+  transform: scale(1.03);
+  box-shadow: 0 0 30px rgba(0, 255, 0, 0.5);
+}
+
+/* ---------- BUTTONS & INPUTS ---------- */
+button {
+  width: 100%;
+  padding: 12px;
+  margin: 5px 0;
+  border-radius: 12px;
+  border: none;
+  font-weight: bold;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: transform 0.1s;
+}
+
+button:active {
+  transform: scale(0.97);
+}
+
+#startScan, #startQR {
+  background: #ff9800;
+  color: white;
+}
+
+#stopScan, #stopQR {
+  background: #546e7a;
+  color: white;
+}
+
+#submitBtn {
+  background: #4caf50;
+  color: white;
+  margin-top: 15px;
+}
+
+#copyBtn, #copyQR {
+  background: #2196f3;
+  color: white;
+}
+
+#exportBtn, #exportQR {
+  background: #673ab7;
+  color: white;
+}
+
+#syncBtn {
+  background: #ff5722;
+  color: white;
+  border: 2px solid #e64a19;
+}
+
+/* Accessibility polish */
+input, textarea {
+  width: 100%;
+  padding: 12px;
+  margin: 8px 0;
+  border: 1px solid #ddd;
+  border-radius: 10px;
+  box-sizing: border-box;
+  font-size: 14px;
+}
+
+/* ---------- TABLE DESIGN ---------- */
+.table-wrapper {
+  overflow-x: auto;
+  margin-top: 20px;
+}
+
+#table {
+  width: 100%;
+  border-collapse: collapse;
+  background: white;
+}
+
+#table th {
+  background: #f8f9fa;
+  padding: 12px 8px;
+  border-bottom: 2px solid #eee;
+  font-size: 12px;
+  color: #666;
+}
+
+#table td {
+  padding: 10px 5px;
+  border-bottom: 1px solid #f1f1f1;
+  font-size: 13px;
+}
+
+/* Flash Effect Overlay */
+.flash-effect {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(255, 255, 255, 0.9);
+  z-index: 9999;
+  pointer-events: none;
+}
