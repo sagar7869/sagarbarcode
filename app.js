@@ -1,3 +1,4 @@
+
 const WEBAPP_URL = "https://script.google.com/macros/s/AKfycbybuMNHEyOEtOzLICttGMC_aVj6gO3pfeCQ4Tj9KJF1TFfmp71TqzJXgGcsG5wS2w48/exec";
 
 document.addEventListener("DOMContentLoaded", () => {
@@ -8,7 +9,7 @@ document.addEventListener("DOMContentLoaded", () => {
     let audioCtx = null;
     let isProcessing = false;
 
-    // --- TAB SWITCHING LOGIC (UNCHANGED) ---
+    // --- TAB SWITCHING LOGIC ---
     const tabs = document.querySelectorAll(".tabBtn");
     const sections = document.querySelectorAll(".tabSection");
 
@@ -24,7 +25,7 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     });
 
-    // --- AUDIO ---
+    // --- AUDIO FEEDBACK ---
     function playHighBeep() {
         try {
             if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
@@ -66,7 +67,7 @@ document.addEventListener("DOMContentLoaded", () => {
         isProcessing = false;
     }
 
-    // --- CAMERA CONTROLS (UNCHANGED) ---
+    // --- CAMERA CONTROLS ---
     document.getElementById("startScan").onclick = () => {
         document.getElementById("reader").style.display = "block";
         if (!barcodeScanner) barcodeScanner = new Html5Qrcode("reader");
@@ -92,7 +93,7 @@ document.addEventListener("DOMContentLoaded", () => {
     document.getElementById("stopScan").onclick = stopBarcodeCamera;
     document.getElementById("stopQR").onclick = stopQRCamera;
 
-    // --- SUBMIT (UNCHANGED) ---
+    // --- SUBMIT LOGIC ---
     document.getElementById("submitBtn").onclick = () => {
         const entry = {
             module: document.getElementById("barcode").value,
@@ -100,29 +101,32 @@ document.addEventListener("DOMContentLoaded", () => {
             remark: document.getElementById("remark").value,
             datetime: document.getElementById("datetime").value
         };
+        
+        if (!entry.module) return alert("Barcode missing!");
+        
         barcodeData.push(entry);
         localStorage.setItem("barcodeData", JSON.stringify(barcodeData));
         updateBarcodeTable();
-        document.getElementById("entryFields").style.display = "none";
-    };
-
-    // ✅ NEW: RETRY BUTTON LOGIC (SAFE ADD)
-    document.getElementById("retryBtn").onclick = async () => {
+        
+        // Form reset karein
         document.getElementById("entryFields").style.display = "none";
         document.getElementById("barcode").value = "";
         document.getElementById("photo").value = "";
         document.getElementById("remark").value = "";
-        document.getElementById("datetime").value = "";
+    };
 
+    // --- RETRY BUTTON ---
+    document.getElementById("retryBtn").onclick = async () => {
+        document.getElementById("entryFields").style.display = "none";
         document.getElementById("reader").style.display = "block";
         if (!barcodeScanner) barcodeScanner = new Html5Qrcode("reader");
         await barcodeScanner.start({ facingMode: "environment" }, scanConfig, c => onScanSuccess(c, "reader", false));
     };
 
-    // --- TABLE LOGIC (UNCHANGED) ---
+    // --- TABLE UPDATE ---
     function updateBarcodeTable() {
         const table = document.getElementById("table");
-        table.innerHTML = "<tr><th>Serial</th><th>Photo</th><th>Remark</th><th>DateTime</th><th>Del</th></tr>";
+        table.innerHTML = "<tr><th>Serial</th><th>Photo</th><th>Remark</th><th>Date & Time</th><th>Delete</th></tr>";
         barcodeData.forEach((e, i) => {
             const row = table.insertRow(-1);
             row.innerHTML = `
@@ -130,7 +134,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 <td>${e.image}</td>
                 <td>${e.remark}</td>
                 <td>${e.datetime}</td>
-                <td><button onclick="deleteRow(${i})" style="background:red;color:white;width:auto;">X</button></td>
+                <td><button onclick="deleteRow(${i})" style="background:red;color:white;width:auto;padding:5px 10px;">X</button></td>
             `;
         });
         document.getElementById("totalCount").innerText = barcodeData.length;
@@ -142,49 +146,58 @@ document.addEventListener("DOMContentLoaded", () => {
         updateBarcodeTable();
     };
 
-    // --- COPY / EXPORT / SYNC (UNCHANGED) ---
+    // --- SYNC TO GOOGLE SHEET (WITHOUT REPEATING DATA) ---
+    document.getElementById("syncBtn").onclick = async () => {
+        if (barcodeData.length === 0) return alert("Sync karne ke liye koi data nahi hai!");
+        
+        const btn = document.getElementById("syncBtn");
+        btn.innerText = "Syncing...";
+        btn.disabled = true;
+
+        try {
+            // mode: "no-cors" aapki original script ke liye
+            await fetch(WEBAPP_URL, { 
+                method: "POST", 
+                mode: "no-cors",
+                headers: { "Content-Type": "text/plain" },
+                body: JSON.stringify(barcodeData) 
+            });
+            
+            alert("Data successfully bhej diya gaya hai!");
+
+            // REPEAT ROKNE KE LIYE DATA CLEAR KAREIN
+            barcodeData = []; 
+            localStorage.setItem("barcodeData", JSON.stringify([]));
+            updateBarcodeTable();
+
+        } catch (e) {
+            console.error(e);
+            alert("Sync Failed! Internet check karein.");
+        } finally {
+            btn.innerText = "Update Google Sheet";
+            btn.disabled = false;
+        }
+    };
+
+    // --- EXPORT & COPY ---
     document.getElementById("copyBtn").onclick = () => {
         let text = "Serial\tPhoto\tRemark\tDateTime\n";
         barcodeData.forEach(e => text += `${e.module}\t${e.image}\t${e.remark}\t${e.datetime}\n`);
-        navigator.clipboard.writeText(text);
+        navigator.clipboard.writeText(text).then(() => alert("Table copied!"));
     };
 
     document.getElementById("exportBtn").onclick = () => {
         let csv = "Serial,Photo,Remark,DateTime\n";
         barcodeData.forEach(e => csv += `"${e.module}","${e.image}","${e.remark}","${e.datetime}"\n`);
-        downloadCSV(csv, "Barcode_Data.csv");
-    };
-
-    document.getElementById("copyQR").onclick = () => {
-        let text = "QR Data\tTime\n";
-        qrDataList.forEach(e => text += `${e.data}\t${e.time}\n`);
-        navigator.clipboard.writeText(text);
-    };
-
-    document.getElementById("exportQR").onclick = () => {
-        let csv = "QR Data,Time\n";
-        qrDataList.forEach(e => csv += `"${e.data}","${e.time}"\n`);
-        downloadCSV(csv, "QR_Data.csv");
-    };
-
-    function downloadCSV(csv, filename) {
         const blob = new Blob([csv], { type: 'text/csv' });
         const url = URL.createObjectURL(blob);
         const a = document.createElement('a');
         a.href = url;
-        a.download = filename;
+        a.download = "Barcode_Data.csv";
         a.click();
-    }
-
-    document.getElementById("syncBtn").onclick = async () => {
-        if (barcodeData.length === 0) return alert("No data to sync!");
-        try {
-            await fetch(WEBAPP_URL, { method: "POST", mode: "no-cors", body: JSON.stringify(barcodeData) });
-            alert("Sync Successful!");
-        } catch {
-            alert("Sync Failed");
-        }
     };
 
+    // Initial table load
     updateBarcodeTable();
 });
+                          
