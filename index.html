@@ -1,74 +1,78 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0">
-    <title>SagarBarcode Pro</title>
-    <link rel="stylesheet" href="style.css">
-    <script src="https://unpkg.com/html5-qrcode"></script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SagarBarcode PWA</title>
+<link rel="stylesheet" href="style.css">
+<script src="https://unpkg.com/html5-qrcode"></script>
 </head>
 <body>
 
-<header><h1>SagarBarcode Scanner</h1></header>
+<header>
+  <h1>SagarBarcode Scanner</h1>
+</header>
 
 <nav>
-    <button class="tabBtn activeTab" data-tab="barcodeTab">Barcode</button>
-    <button class="tabBtn" data-tab="qrTab">QR Code</button>
+  <button class="tabBtn activeTab" data-tab="barcodeTab">Barcode</button>
+  <button class="tabBtn" data-tab="qrTab">QR Code</button>
 </nav>
 
-<main class="container">
-    <section id="barcodeTab" class="tabSection" style="display:block;">
-        <div class="camera-wrapper">
-            <div id="reader"></div>
-            <div id="controlsOverlay" class="overlay-ui" style="display:none;">
-                <button id="torchBtn" class="torch-btn">🔦</button>
-                <div class="zoom-bar">
-                    <input type="range" id="zoomRange" min="1" max="5" step="0.1" value="1">
-                </div>
-            </div>
-        </div>
+<section id="barcodeTab" class="tabSection" style="display:block;">
+  <div class="card headerCard">
+    <strong>Barcode Scanner</strong>
+    <div class="scanCount">Total Scans: <span id="totalCount">0</span></div>
+  </div>
 
-        <div class="btn-group">
-            <button id="startScan" class="btn-orange">Start Scan</button>
-            <button id="stopScan" class="btn-grey">Stop Scan</button>
-        </div>
+  <div class="card cameraCard">
+    <div id="reader" class="cameraPreview"></div>
+    <div class="scanButtons">
+      <button id="startScan">Start Scan</button>
+      <button id="stopScan">Stop Scan</button>
+    </div>
 
-        <div id="entryFields" style="display:none;" class="form-card">
-            <input id="barcode" placeholder="Serial Number">
-            <input id="photo" placeholder="Photo Number">
-            <textarea id="remark" placeholder="Remark"></textarea>
-            <input id="datetime" readonly>
-            <button id="submitBtn" class="btn-green">Submit</button>
-            <button id="retryBtn" class="btn-dark">Retry</button>
-        </div>
+    <div id="entryFields" style="display:none;">
+      <input id="barcode" placeholder="Serial Number">
+      <input id="photo" placeholder="Photo Number">
+      <textarea id="remark" placeholder="Remark"></textarea>
+      <input id="datetime" readonly>
+      <button id="submitBtn">Submit</button>
+      <button id="retryBtn">Retry</button>
+    </div>
+  </div>
 
-        <div class="table-scroll">
-            <table id="table">
-                <thead><tr><th>Serial</th><th>Photo</th><th>Remark</th><th>Time</th><th>Del</th></tr></thead>
-                <tbody id="tableBody"></tbody>
-            </table>
-        </div>
+  <table id="table">
+    <tr><th>Serial</th><th>Photo</th><th>Remark</th><th>Date & Time</th><th>Delete</th></tr>
+  </table>
 
-        <div class="action-grid">
-            <button id="copyBtn">Copy</button>
-            <button id="exportBtn">CSV</button>
-            <button id="syncBtn">Sync</button>
-        </div>
-    </section>
+  <div class="actions">
+    <button id="copyBtn">Copy Table</button>
+    <button id="exportBtn">Export CSV</button>
+    <button id="syncBtn">Update Google Sheet</button>
+  </div>
+</section>
 
-    <section id="qrTab" class="tabSection">
-        <div class="camera-wrapper">
-            <div id="qr-reader"></div>
-            <div id="qrOverlay" class="overlay-ui" style="display:none;">
-                <button id="torchBtnQR" class="torch-btn">🔦</button>
-            </div>
-        </div>
-        <input id="qrField" readonly placeholder="QR Result">
-        <button id="startQR" class="btn-orange">Start QR Scan</button>
-        <button id="stopQR" class="btn-grey">Stop QR Scan</button>
-    </section>
-</main>
+<section id="qrTab" class="tabSection">
+  <div class="card headerCard">
+    <strong>QR Code Scanner</strong>
+  </div>
 
+  <div class="card cameraCard">
+    <div id="qr-reader" class="cameraPreview"></div>
+    <div class="scanButtons">
+      <button id="startQR">Start QR Scan</button>
+      <button id="stopQR">Stop QR Scan</button>
+    </div>
+    <input id="qrField" readonly placeholder="QR Data">
+  </div>
+
+  <div class="actions">
+    <button id="copyQR">Copy</button>
+    <button id="exportQR">Export CSV</button>
+  </div>
+</section>
+
+<footer>Design by – Sagar Herole</footer>
 <script src="app.js"></script>
 </body>
 </html>
