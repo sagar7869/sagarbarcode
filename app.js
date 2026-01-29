@@ -9,16 +9,21 @@ document.addEventListener("DOMContentLoaded", () => {
     let isProcessing = false;
 
     // --- Tab Switching & Cleanup ---
-    document.querySelectorAll(".tabBtn").forEach(tab => {
+    const tabs = document.querySelectorAll(".tabBtn");
+    const sections = document.querySelectorAll(".tabSection");
+    tabs.forEach(tab => {
         tab.addEventListener("click", async () => {
-            document.querySelectorAll(".tabSection").forEach(s => s.style.display = "none");
-            document.querySelectorAll(".tabBtn").forEach(t => t.classList.remove("activeTab"));
-            document.getElementById(tab.getAttribute("data-tab")).style.display = "block";
+            const target = tab.getAttribute("data-tab");
+            sections.forEach(s => s.style.display = "none");
+            tabs.forEach(t => t.classList.remove("activeTab"));
+            document.getElementById(target).style.display = "block";
             tab.classList.add("activeTab");
             
-            // Tab switch par camera release karna
+            // Camera stop logic
             if (barcodeScanner && barcodeScanner.isScanning) await barcodeScanner.stop();
             if (qrScanner && qrScanner.isScanning) await qrScanner.stop();
+            document.getElementById("reader").style.display = "none";
+            document.getElementById("qr-reader").style.display = "none";
         });
     });
 
@@ -33,36 +38,28 @@ document.addEventListener("DOMContentLoaded", () => {
         } catch (e) {}
     }
 
-    // --- BARCODE SECTION (Full Box View) ---
+    // --- BARCODE SECTION (Full View) ---
     document.getElementById("startScan").onclick = () => {
         document.getElementById("reader").style.display = "block";
         if (!barcodeScanner) barcodeScanner = new Html5Qrcode("reader");
         
-        // Config se aspectRatio hata diya taaki CSS fill kaam kar sake
-        const barcodeConfig = { 
-            fps: 25, 
-            qrbox: { width: 300, height: 160 } 
-        };
+        // Yahan se aspectRatio hata diya gaya hai taaki CSS fill kaam kare
+        const config = { fps: 25, qrbox: { width: 300, height: 160 } };
 
-        barcodeScanner.start(
-            { facingMode: "environment" }, // Back Camera
-            barcodeConfig, 
-            (code) => {
-                if (isProcessing) return;
-                isProcessing = true;
-                playBeep();
-                barcodeScanner.stop().then(() => {
-                    document.getElementById("reader").style.display = "none";
-                    document.getElementById("entryFields").style.display = "block";
-                    document.getElementById("barcode").value = code;
-                    document.getElementById("datetime").value = new Date().toLocaleString('en-GB');
-                    isProcessing = false;
-                });
-            }
-        ).catch(err => alert("Camera error: " + err));
+        barcodeScanner.start({ facingMode: "environment" }, config, (code) => {
+            if (isProcessing) return;
+            isProcessing = true;
+            playBeep();
+            barcodeScanner.stop().then(() => {
+                document.getElementById("reader").style.display = "none";
+                document.getElementById("entryFields").style.display = "block";
+                document.getElementById("barcode").value = code;
+                document.getElementById("datetime").value = new Date().toLocaleString('en-GB');
+                isProcessing = false;
+            });
+        }).catch(err => console.log(err));
     };
 
-    // Retry Button Fix
     document.getElementById("retryBtn").onclick = () => {
         document.getElementById("entryFields").style.display = "none";
         document.getElementById("startScan").click();
@@ -75,24 +72,20 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     };
 
-    // --- QR SECTION (Full Box View) ---
+    // --- QR SECTION (Full View) ---
     document.getElementById("startQR").onclick = () => {
         document.getElementById("qr-reader").style.display = "block";
         if (!qrScanner) qrScanner = new Html5Qrcode("qr-reader");
         
-        qrScanner.start(
-            { facingMode: "environment" }, 
-            { fps: 20, qrbox: 250 }, 
-            (code) => {
-                playBeep();
-                document.getElementById("qrField").value = code;
-                qrDataList.push({ data: code, time: new Date().toLocaleString('en-GB') });
-                localStorage.setItem("qrDataList", JSON.stringify(qrDataList));
-                qrScanner.stop().then(() => {
-                    document.getElementById("qr-reader").style.display = "none";
-                });
-            }
-        );
+        qrScanner.start({ facingMode: "environment" }, { fps: 20, qrbox: 250 }, (code) => {
+            playBeep();
+            document.getElementById("qrField").value = code;
+            qrDataList.push({ data: code, time: new Date().toLocaleString('en-GB') });
+            localStorage.setItem("qrDataList", JSON.stringify(qrDataList));
+            qrScanner.stop().then(() => {
+                document.getElementById("qr-reader").style.display = "none";
+            });
+        });
     };
 
     document.getElementById("stopQR").onclick = async () => {
@@ -102,7 +95,7 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     };
 
-    // --- Data Management (Aapka logic same hai) ---
+    // --- Data Handling (As it is) ---
     document.getElementById("submitBtn").onclick = async () => {
         const entry = {
             module: document.getElementById("barcode").value,
@@ -111,11 +104,11 @@ document.addEventListener("DOMContentLoaded", () => {
             datetime: document.getElementById("datetime").value,
             synced: false
         };
-        if (!entry.module) return alert("Scan karein!");
+        if (!entry.module) return alert("Pehle Scan karein!");
         barcodeData.push(entry);
         localStorage.setItem("barcodeData", JSON.stringify(barcodeData));
         updateTable();
-        
+
         const ok = await sendToGoogleSheet([entry]);
         if (ok) {
             barcodeData[barcodeData.length - 1].synced = true;
@@ -137,7 +130,7 @@ document.addEventListener("DOMContentLoaded", () => {
         table.innerHTML = "<tr><th>Serial</th><th>Photo</th><th>Remark</th><th>Status</th><th>Del</th></tr>";
         barcodeData.forEach((e, i) => {
             const row = table.insertRow(-1);
-            row.innerHTML = `<td>${e.module}</td><td>${e.image}</td><td>${e.remark}</td><td style="color:${e.synced ? 'green' : 'red'};">${e.synced ? 'Synced' : 'Pending'}</td><td><button onclick="deleteRow(${i})">X</button></td>`;
+            row.innerHTML = `<td>${e.module}</td><td>${e.image}</td><td>${e.remark}</td><td style="color:${e.synced ? 'green' : 'red'};">${e.synced ? 'Synced' : 'Pending'}</td><td><button onclick="deleteRow(${i})" style="background:red; color:white; width:auto;">X</button></td>`;
         });
         document.getElementById("totalCount").innerText = barcodeData.length;
     }
