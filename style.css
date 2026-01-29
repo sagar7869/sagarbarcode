@@ -65,11 +65,12 @@ nav {
   background: #fff;
 }
 
-/* ---------- PROFESSIONAL CAMERA UI ---------- */
+/* ---------- PROFESSIONAL CAMERA UI (Updated for Full Screen) ---------- */
 .cameraPreview {
   display: none;
-  width: 320px;
-  height: 320px;
+  width: 100%;           /* Pura area cover karne ke liye */
+  max-width: 350px;      /* Maximum size control */
+  height: 350px;         /* Video box ki height */
   background: #000;
   border-radius: 25px;
   overflow: hidden;
@@ -77,6 +78,13 @@ nav {
   position: relative;
   border: 5px solid #333;
   transition: all 0.3s ease;
+}
+
+/* YAHI HAI MAIN FIX: Video ko stretch karne ke liye */
+.cameraPreview video {
+  width: 100% !important;
+  height: 100% !important;
+  object-fit: cover !important; /* Isse black borders gayab ho jayenge */
 }
 
 /* Laser Scan Line Animation */
@@ -105,12 +113,12 @@ nav {
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  width: 220px;
-  height: 220px;
+  width: 250px;           /* Focus box thoda bada kiya */
+  height: 180px;          /* Barcode ke liye rectangular shape */
   border: 2px solid rgba(255, 255, 255, 0.5);
-  box-shadow: 0 0 0 500px rgba(0, 0, 0, 0.6);
+  box-shadow: 0 0 0 500px rgba(0, 0, 0, 0.4); /* Overlay thoda light kiya clear view ke liye */
   z-index: 5;
-  border-radius: 20px;
+  border-radius: 15px;
 }
 
 /* Instant Scan Success State */
