@@ -8,26 +8,17 @@ document.addEventListener("DOMContentLoaded", () => {
     let audioCtx = null;
     let isProcessing = false;
 
-    // --- Tab Switching & Force Stop ---
-    const tabs = document.querySelectorAll(".tabBtn");
-    const sections = document.querySelectorAll(".tabSection");
-    tabs.forEach(tab => {
+    // --- Tab Switching & Cleanup ---
+    document.querySelectorAll(".tabBtn").forEach(tab => {
         tab.addEventListener("click", async () => {
-            const target = tab.getAttribute("data-tab");
-            sections.forEach(s => s.style.display = "none");
-            tabs.forEach(t => t.classList.remove("activeTab"));
-            document.getElementById(target).style.display = "block";
+            document.querySelectorAll(".tabSection").forEach(s => s.style.display = "none");
+            document.querySelectorAll(".tabBtn").forEach(t => t.classList.remove("activeTab"));
+            document.getElementById(tab.getAttribute("data-tab")).style.display = "block";
             tab.classList.add("activeTab");
             
-            // Tab badalte hi camera ko 100% release karna
-            if (barcodeScanner && barcodeScanner.isScanning) {
-                await barcodeScanner.stop().catch(() => {});
-                document.getElementById("reader").style.display = "none";
-            }
-            if (qrScanner && qrScanner.isScanning) {
-                await qrScanner.stop().catch(() => {});
-                document.getElementById("qr-reader").style.display = "none";
-            }
+            // Tab switch par camera release karna
+            if (barcodeScanner && barcodeScanner.isScanning) await barcodeScanner.stop();
+            if (qrScanner && qrScanner.isScanning) await qrScanner.stop();
         });
     });
 
@@ -42,47 +33,53 @@ document.addEventListener("DOMContentLoaded", () => {
         } catch (e) {}
     }
 
-    // --- BARCODE (Full Screen Back Camera) ---
+    // --- BARCODE SECTION (Full Box View) ---
     document.getElementById("startScan").onclick = () => {
-        const readerDiv = document.getElementById("reader");
-        readerDiv.style.display = "block";
-        
+        document.getElementById("reader").style.display = "block";
         if (!barcodeScanner) barcodeScanner = new Html5Qrcode("reader");
-
-        // Force Back Camera & High Resolution
-        const config = { 
+        
+        // Config se aspectRatio hata diya taaki CSS fill kaam kar sake
+        const barcodeConfig = { 
             fps: 25, 
-            qrbox: { width: 320, height: 180 },
-            // Video area ko fill karne ke liye ye settings zaruri hain
-            videoConstraints: {
-                facingMode: { exact: "environment" }, // 100% Back Camera Only
-                width: { ideal: 1280 },
-                height: { ideal: 720 }
-            }
+            qrbox: { width: 300, height: 160 } 
         };
 
-        barcodeScanner.start({ facingMode: "environment" }, config, (code) => {
-            if (isProcessing) return;
-            isProcessing = true;
-            playBeep();
-            barcodeScanner.stop().then(() => {
-                readerDiv.style.display = "none";
-                document.getElementById("entryFields").style.display = "block";
-                document.getElementById("barcode").value = code;
-                document.getElementById("datetime").value = new Date().toLocaleString('en-GB');
-                isProcessing = false;
-            });
-        }).catch(err => {
-            // Agar 'exact' environment fail ho (kuch browsers mein), toh normal try karein
-            barcodeScanner.start({ facingMode: "environment" }, config, (code) => { /* same logic */ });
-        });
+        barcodeScanner.start(
+            { facingMode: "environment" }, // Back Camera
+            barcodeConfig, 
+            (code) => {
+                if (isProcessing) return;
+                isProcessing = true;
+                playBeep();
+                barcodeScanner.stop().then(() => {
+                    document.getElementById("reader").style.display = "none";
+                    document.getElementById("entryFields").style.display = "block";
+                    document.getElementById("barcode").value = code;
+                    document.getElementById("datetime").value = new Date().toLocaleString('en-GB');
+                    isProcessing = false;
+                });
+            }
+        ).catch(err => alert("Camera error: " + err));
     };
 
-    // --- QR (Full Screen Back Camera) ---
+    // Retry Button Fix
+    document.getElementById("retryBtn").onclick = () => {
+        document.getElementById("entryFields").style.display = "none";
+        document.getElementById("startScan").click();
+    };
+
+    document.getElementById("stopScan").onclick = async () => {
+        if (barcodeScanner && barcodeScanner.isScanning) {
+            await barcodeScanner.stop();
+            document.getElementById("reader").style.display = "none";
+        }
+    };
+
+    // --- QR SECTION (Full Box View) ---
     document.getElementById("startQR").onclick = () => {
         document.getElementById("qr-reader").style.display = "block";
         if (!qrScanner) qrScanner = new Html5Qrcode("qr-reader");
-
+        
         qrScanner.start(
             { facingMode: "environment" }, 
             { fps: 20, qrbox: 250 }, 
@@ -98,13 +95,6 @@ document.addEventListener("DOMContentLoaded", () => {
         );
     };
 
-    // Stop Buttons
-    document.getElementById("stopScan").onclick = async () => {
-        if (barcodeScanner && barcodeScanner.isScanning) {
-            await barcodeScanner.stop();
-            document.getElementById("reader").style.display = "none";
-        }
-    };
     document.getElementById("stopQR").onclick = async () => {
         if (qrScanner && qrScanner.isScanning) {
             await qrScanner.stop();
@@ -112,13 +102,7 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     };
 
-    // Retry Button
-    document.getElementById("retryBtn").onclick = () => {
-        document.getElementById("entryFields").style.display = "none";
-        document.getElementById("startScan").click();
-    };
-
-    // --- Data Handling (Sync, Table etc. as it is) ---
+    // --- Data Management (Aapka logic same hai) ---
     document.getElementById("submitBtn").onclick = async () => {
         const entry = {
             module: document.getElementById("barcode").value,
@@ -127,10 +111,11 @@ document.addEventListener("DOMContentLoaded", () => {
             datetime: document.getElementById("datetime").value,
             synced: false
         };
-        if (!entry.module) return alert("Pehle Scan karein!");
+        if (!entry.module) return alert("Scan karein!");
         barcodeData.push(entry);
         localStorage.setItem("barcodeData", JSON.stringify(barcodeData));
         updateTable();
+        
         const ok = await sendToGoogleSheet([entry]);
         if (ok) {
             barcodeData[barcodeData.length - 1].synced = true;
@@ -154,6 +139,7 @@ document.addEventListener("DOMContentLoaded", () => {
             const row = table.insertRow(-1);
             row.innerHTML = `<td>${e.module}</td><td>${e.image}</td><td>${e.remark}</td><td style="color:${e.synced ? 'green' : 'red'};">${e.synced ? 'Synced' : 'Pending'}</td><td><button onclick="deleteRow(${i})">X</button></td>`;
         });
+        document.getElementById("totalCount").innerText = barcodeData.length;
     }
 
     window.deleteRow = (i) => {
