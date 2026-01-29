@@ -8,7 +8,7 @@ document.addEventListener("DOMContentLoaded", () => {
     let audioCtx = null;
     let isProcessing = false;
 
-    // --- Tab Switching (Internal Wait Fix) ---
+    // --- Tab Switching ---
     const tabs = document.querySelectorAll(".tabBtn");
     const sections = document.querySelectorAll(".tabSection");
     tabs.forEach(tab => {
@@ -19,7 +19,6 @@ document.addEventListener("DOMContentLoaded", () => {
             document.getElementById(target).style.display = "block";
             tab.classList.add("activeTab");
             
-            // Internal Fix: Scanner ko wait karke band karna
             if (barcodeScanner && barcodeScanner.isScanning) await barcodeScanner.stop();
             if (qrScanner && qrScanner.isScanning) await qrScanner.stop();
         });
@@ -36,16 +35,21 @@ document.addEventListener("DOMContentLoaded", () => {
         } catch (e) { console.log(e); }
     }
 
-    // --- Barcode Section Logic (Optimized Internal) ---
+    // --- Barcode Section Logic (Improved Area & Box) ---
     document.getElementById("startScan").onclick = () => {
         document.getElementById("reader").style.display = "block";
         if (!barcodeScanner) barcodeScanner = new Html5Qrcode("reader");
         
-        // Internal Best Technology for Barcode
+        // Scan area bada karne ke liye aspectRatio aur box size update kiya
         const barcodeConfig = { 
-            fps: 20, 
-            qrbox: { width: 300, height: 150 }, // Rectangular for 1D Barcodes
-            formatsToSupport: [ Html5QrcodeSupportedFormats.CODE_128, Html5QrcodeSupportedFormats.EAN_13, Html5QrcodeSupportedFormats.QR_CODE ]
+            fps: 25, 
+            qrbox: { width: 320, height: 160 }, // Bada aur rectangular box
+            aspectRatio: 1.777778, // 16:9 widescreen view (black area kam karega)
+            videoConstraints: {
+                facingMode: "environment",
+                width: { min: 640, ideal: 1280, max: 1920 },
+                height: { min: 480, ideal: 720, max: 1080 }
+            }
         };
 
         barcodeScanner.start({ facingMode: "environment" }, barcodeConfig, (code) => {
@@ -60,7 +64,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 document.getElementById("photo").focus();
                 isProcessing = false;
             });
-        });
+        }).catch(err => console.log(err));
     };
 
     document.getElementById("stopScan").onclick = async () => {
@@ -70,21 +74,28 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     };
 
-    // --- QR Section Logic (Optimized Internal) ---
+    // --- Retry Button Fix ---
+    document.getElementById("retryBtn").onclick = () => {
+        document.getElementById("entryFields").style.display = "none";
+        document.getElementById("barcode").value = "";
+        document.getElementById("photo").value = "";
+        document.getElementById("remark").value = "";
+        document.getElementById("startScan").click(); // Fir se scanner start karega
+    };
+
+    // --- QR Section Logic ---
     document.getElementById("startQR").onclick = () => {
         document.getElementById("qr-reader").style.display = "block";
         if (!qrScanner) qrScanner = new Html5Qrcode("qr-reader");
         
-        // Square box for QR
         qrScanner.start({ facingMode: "environment" }, { fps: 20, qrbox: 250 }, (code) => {
             playBeep();
             document.getElementById("qrField").value = code;
             qrDataList.push({ data: code, time: new Date().toLocaleString('en-GB') });
             localStorage.setItem("qrDataList", JSON.stringify(qrDataList));
-
             qrScanner.stop().then(() => {
                 document.getElementById("qr-reader").style.display = "none";
-                alert("QR Scanned Successfully!"); // Aapki language
+                alert("QR Scanned Successfully!");
             });
         });
     };
@@ -96,23 +107,19 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     };
 
-    // --- QR Copy & Export ---
+    // QR Copy & Export
     document.getElementById("copyQR").onclick = () => {
         const val = document.getElementById("qrField").value;
-        if(!val) return alert("Kuch scan nahi kiya!");
+        if(!val) return alert("Pehle kuch scan karein!");
         navigator.clipboard.writeText(val);
-        alert("QR Data copied!");
+        alert("QR Data copy ho gaya!");
     };
 
     document.getElementById("exportQR").onclick = () => {
         if (qrDataList.length === 0) return alert("QR Data nahi hai!");
         let csv = "QR_Data,DateTime\n";
         qrDataList.forEach(e => { csv += `"${e.data}","${e.time}"\n`; });
-        const blob = new Blob([csv], { type: "text/csv" });
-        const a = document.createElement("a");
-        a.href = URL.createObjectURL(blob);
-        a.download = "SagarQR_Data.csv";
-        a.click();
+        downloadCSV(csv, "SagarQR_Data.csv");
     };
 
     // --- Submit Logic (Aapka Sync Status Logic) ---
@@ -130,7 +137,6 @@ document.addEventListener("DOMContentLoaded", () => {
         localStorage.setItem("barcodeData", JSON.stringify(barcodeData));
         updateTable();
 
-        // Background Sync
         const ok = await sendToGoogleSheet([entry]);
         if (ok) {
             barcodeData[barcodeData.length - 1].synced = true;
@@ -190,26 +196,30 @@ document.addEventListener("DOMContentLoaded", () => {
         window.getSelection().removeAllRanges();
         window.getSelection().addRange(range);
         document.execCommand("copy");
-        alert("Table copied!");
+        alert("Table copy ho gayi!");
     };
 
     document.getElementById("exportBtn").onclick = () => {
         if (barcodeData.length === 0) return alert("Data nahi hai!");
         let csv = "Serial,Photo,Remark,DateTime\n";
         barcodeData.forEach(e => { csv += `"${e.module}","${e.image}","${e.remark}","${e.datetime}"\n`; });
+        downloadCSV(csv, "SagarBarcode_Data.csv");
+    };
+
+    function downloadCSV(csv, filename) {
         const blob = new Blob([csv], { type: "text/csv" });
         const a = document.createElement("a");
         a.href = URL.createObjectURL(blob);
-        a.download = "SagarBarcode_Data.csv";
+        a.download = filename;
         a.click();
-    };
+    }
 
     function updateTable() {
         const table = document.getElementById("table");
         table.innerHTML = "<tr><th>Serial</th><th>Photo</th><th>Remark</th><th>Status</th><th>Del</th></tr>";
         barcodeData.forEach((e, i) => {
             const row = table.insertRow(-1);
-            row.innerHTML = `<td>${e.module}</td><td>${e.image}</td><td>${e.remark}</td><td style="color:${e.synced ? 'green' : 'red'}; font-weight:bold;">${e.synced ? 'Synced' : 'Pending'}</td><td><button onclick="deleteRow(${i})" style="background:red; color:white; width:auto; padding:5px 10px;">X</button></td>`;
+            row.innerHTML = `<td>${e.module}</td><td>${e.image}</td><td>${e.remark}</td><td style="color:${e.synced ? 'green' : 'red'}; font-weight:bold;">${e.synced ? 'Synced' : 'Pending'}</td><td><button onclick="deleteRow(${i})" style="background:red; color:white; width:auto; padding: 5px 10px;">X</button></td>`;
         });
         document.getElementById("totalCount").innerText = barcodeData.length;
     }
