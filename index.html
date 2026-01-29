@@ -4,9 +4,11 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>SagarBarcode PWA</title>
+
 <link rel="stylesheet" href="style.css">
 <script src="https://unpkg.com/html5-qrcode"></script>
 </head>
+
 <body>
 
 <header>
@@ -19,60 +21,53 @@
 </nav>
 
 <section id="barcodeTab" class="tabSection" style="display:block;">
-  <div class="card headerCard">
+  <div class="card">
     <strong>Barcode Scanner</strong>
-    <div class="scanCount">Total Scans: <span id="totalCount">0</span></div>
+    <div>Total Scans: <span id="totalCount">0</span></div>
   </div>
 
-  <div class="card cameraCard">
+  <div class="card">
     <div id="reader" class="cameraPreview"></div>
-    <div class="scanButtons">
-      <button id="startScan">Start Scan</button>
-      <button id="stopScan">Stop Scan</button>
-    </div>
+
+    <button id="startScan" autofocus>Start Scan</button>
+    <button id="stopScan">Stop Scan</button>
 
     <div id="entryFields" style="display:none;">
-      <input id="barcode" placeholder="Serial Number">
-      <input id="photo" placeholder="Photo Number">
-      <textarea id="remark" placeholder="Remark"></textarea>
+      <input id="barcode" placeholder="Serial Number" autocomplete="off">
+      <input id="photo" placeholder="Photo Number" autocomplete="off">
+      <textarea id="remark" placeholder="Remark" rows="2"></textarea>
       <input id="datetime" readonly>
       <button id="submitBtn">Submit</button>
       <button id="retryBtn">Retry</button>
     </div>
   </div>
 
-  <table id="table">
-    <tr><th>Serial</th><th>Photo</th><th>Remark</th><th>Date & Time</th><th>Delete</th></tr>
-  </table>
-
-  <div class="actions">
-    <button id="copyBtn">Copy Table</button>
-    <button id="exportBtn">Export CSV</button>
-    <button id="syncBtn">Update Google Sheet</button>
+  <div class="table-wrapper">
+    <table id="table">
+      <tr>
+        <th>Serial</th>
+        <th>Photo</th>
+        <th>Remark</th>
+        <th>Date & Time</th>
+        <th>Delete</th>
+      </tr>
+    </table>
   </div>
+
+  <button id="copyBtn">Copy Table</button>
+  <button id="exportBtn">Export CSV</button>
+  <button id="syncBtn">Update Google Sheet</button>
 </section>
 
 <section id="qrTab" class="tabSection">
-  <div class="card headerCard">
-    <strong>QR Code Scanner</strong>
-  </div>
-
-  <div class="card cameraCard">
-    <div id="qr-reader" class="cameraPreview"></div>
-    <div class="scanButtons">
-      <button id="startQR">Start QR Scan</button>
-      <button id="stopQR">Stop QR Scan</button>
-    </div>
-    <input id="qrField" readonly placeholder="QR Data">
-  </div>
-
-  <div class="actions">
-    <button id="copyQR">Copy</button>
-    <button id="exportQR">Export CSV</button>
-  </div>
+  <div id="qr-reader" class="cameraPreview"></div>
+  <button id="startQR">Start QR Scan</button>
+  <button id="stopQR">Stop QR Scan</button>
+  <input id="qrField" readonly>
 </section>
 
 <footer>Design by – Sagar Herole</footer>
+
 <script src="app.js"></script>
 </body>
 </html>
