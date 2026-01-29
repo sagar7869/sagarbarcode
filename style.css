@@ -1,80 +1,187 @@
-* { box-sizing: border-box; }
-body { font-family: 'Segoe UI', sans-serif; margin: 0; background: #f0f2f5; text-align: center; }
-header { background: #ff5722; color: white; padding: 15px; font-weight: bold; }
-
-.container { max-width: 450px; margin: 0 auto; padding: 10px; }
-nav { display: flex; justify-content: center; gap: 10px; margin: 15px 0; }
-
-.tabBtn { padding: 10px 18px; border-radius: 20px; border: 1px solid #ff5722; background: white; cursor: pointer; font-weight: bold; }
-.tabBtn.activeTab { background: #ff5722; color: white; }
-
-.tabSection { display: none; }
-
-/* --- CAMERA FIXED LAYOUT --- */
-.camera-wrapper {
-    position: relative;
-    width: 100%;
-    height: 400px;
-    background: #000;
-    border-radius: 20px;
-    border: 4px solid #333;
-    overflow: hidden;
-    margin-bottom: 15px;
+/* General Styling */
+body {
+  font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  margin: 0;
+  padding: 0;
+  background-color: #f4f7f9;
+  color: #333;
+  text-align: center;
 }
 
-#reader, #qr-reader { width: 100% !important; height: 100% !important; }
-
-/* OVERLAY UI */
-.overlay-ui {
-    position: absolute;
-    top: 0; left: 0; width: 100%; height: 100%;
-    z-index: 999; 
-    pointer-events: none; /* Allows camera clicks */
+/* Header & Footer */
+header, footer {
+  background: linear-gradient(135deg, #ff5722, #e64a19);
+  color: white;
+  padding: 15px 0;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.2);
 }
 
-.torch-btn {
-    pointer-events: auto;
-    position: absolute;
-    top: 15px; right: 15px;
-    width: 45px; height: 45px;
-    background: rgba(0,0,0,0.6);
-    border: 1px solid rgba(255,255,255,0.4);
-    border-radius: 50%; color: white; cursor: pointer;
+header h1 { margin: 0; font-size: 1.5rem; letter-spacing: 1px; }
+
+/* Navigation Tabs */
+nav {
+  display: flex;
+  justify-content: center;
+  margin: 20px 0;
+  gap: 10px;
 }
 
-.zoom-bar {
-    pointer-events: auto;
-    position: absolute;
-    bottom: 20px; left: 50%;
-    transform: translateX(-50%);
-    width: 70%;
-    background: rgba(0,0,0,0.6);
-    padding: 10px; border-radius: 20px;
+.tabBtn {
+  padding: 12px 25px;
+  border: 2px solid #ff5722;
+  background: white;
+  color: #ff5722;
+  border-radius: 30px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: all 0.3s ease;
 }
 
-#zoomRange { width: 100%; accent-color: #ff5722; }
-
-/* Laser Line */
-.camera-wrapper::after {
-    content: ""; position: absolute; top: 20%; left: 10%; width: 80%; height: 2px;
-    background: #00ff00; box-shadow: 0 0 10px #00ff00;
-    animation: scanLine 2.5s infinite; z-index: 10;
+.tabBtn.activeTab {
+  background: #ff5722;
+  color: white;
+  box-shadow: 0 4px 10px rgba(255, 87, 34, 0.3);
 }
-@keyframes scanLine { 50% { top: 80%; } }
 
-/* BUTTONS & TABLE */
-button { width: 100%; padding: 12px; margin: 5px 0; border-radius: 10px; border: none; font-weight: bold; cursor: pointer; }
-.btn-orange { background: #ff9800; color: white; }
-.btn-grey { background: #546e7a; color: white; }
-.btn-green { background: #4caf50; color: white; }
-.btn-dark { background: #333; color: white; }
+/* Section Styling */
+.tabSection {
+  display: none;
+  max-width: 450px;
+  margin: 0 auto 20px auto;
+  padding: 15px;
+  background: white;
+  border-radius: 20px;
+  box-shadow: 0 10px 25px rgba(0,0,0,0.05);
+}
 
-.form-card { background: white; padding: 15px; border-radius: 15px; margin-top: 10px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
-input, textarea { width: 100%; padding: 12px; margin: 5px 0; border: 1px solid #ddd; border-radius: 8px; }
+.card {
+  padding: 15px;
+  margin-bottom: 15px;
+  border-radius: 15px;
+  background: #fff;
+}
 
-.table-scroll { overflow-x: auto; margin-top: 20px; }
-#table { width: 100%; background: white; border-collapse: collapse; font-size: 12px; }
-#table th, #table td { border: 1px solid #eee; padding: 10px; text-align: center; }
+/* ---------- PROFESSIONAL CAMERA UI ---------- */
+.cameraPreview {
+  display: none; 
+  width: 320px;
+  height: 320px; /* Perfect Square */
+  background: #000;
+  border-radius: 25px;
+  overflow: hidden;
+  margin: 0 auto 20px auto;
+  position: relative;
+  border: 5px solid #333;
+  transition: all 0.3s ease;
+}
 
-.action-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 5px; margin-top: 15px; }
-.action-grid button { font-size: 11px; background: #2196f3; color: white; }
+/* Image of a professional QR code scanner interface with a square frame and laser line */
+
+
+/* Laser Scan Line Animation */
+.cameraPreview::after {
+  content: "";
+  position: absolute;
+  top: 15%;
+  left: 10%;
+  width: 80%;
+  height: 3px;
+  background: #00ff00;
+  box-shadow: 0 0 15px 5px rgba(0, 255, 0, 0.7);
+  animation: scanMove 1.8s infinite ease-in-out;
+  z-index: 10;
+}
+
+@keyframes scanMove {
+  0%, 100% { top: 20%; opacity: 0.8; }
+  50% { top: 80%; opacity: 1; }
+}
+
+/* Corner Brackets / Square Focus Area */
+.cameraPreview::before {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 220px;
+  height: 220px;
+  border: 2px solid rgba(255, 255, 255, 0.5);
+  box-shadow: 0 0 0 500px rgba(0, 0, 0, 0.6); /* Darkens the area outside focus */
+  z-index: 5;
+  border-radius: 20px;
+}
+
+/* Instant Scan Success State */
+.scan-success {
+  border-color: #00ff00 !important;
+  transform: scale(1.03);
+  box-shadow: 0 0 30px rgba(0, 255, 0, 0.5);
+}
+
+/* ---------- BUTTONS & INPUTS ---------- */
+button {
+  width: 100%;
+  padding: 12px;
+  margin: 5px 0;
+  border-radius: 12px;
+  border: none;
+  font-weight: bold;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: transform 0.1s;
+}
+
+button:active { transform: scale(0.97); }
+
+#startScan, #startQR { background: #ff9800; color: white; }
+#stopScan, #stopQR { background: #546e7a; color: white; }
+#submitBtn { background: #4caf50; color: white; margin-top: 15px; }
+#copyBtn, #copyQR { background: #2196f3; color: white; }
+#exportBtn, #exportQR { background: #673ab7; color: white; }
+#syncBtn { background: #ff5722; color: white; border: 2px solid #e64a19; }
+
+input, textarea {
+  width: 100%;
+  padding: 12px;
+  margin: 8px 0;
+  border: 1px solid #ddd;
+  border-radius: 10px;
+  box-sizing: border-box;
+  font-size: 14px;
+}
+
+/* ---------- TABLE DESIGN ---------- */
+.table-wrapper {
+  overflow-x: auto;
+  margin-top: 20px;
+}
+
+#table {
+  width: 100%;
+  border-collapse: collapse;
+  background: white;
+}
+
+#table th {
+  background: #f8f9fa;
+  padding: 12px 8px;
+  border-bottom: 2px solid #eee;
+  font-size: 12px;
+  color: #666;
+}
+
+#table td {
+  padding: 10px 5px;
+  border-bottom: 1px solid #f1f1f1;
+  font-size: 13px;
+}
+
+/* Flash Effect Overlay */
+.flash-effect {
+  position: fixed;
+  top: 0; left: 0; width: 100%; height: 100%;
+  background: rgba(255, 255, 255, 0.9);
+  z-index: 9999;
+  pointer-events: none;
+}
