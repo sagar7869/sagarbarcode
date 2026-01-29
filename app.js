@@ -33,25 +33,22 @@ document.addEventListener("DOMContentLoaded", () => {
         } catch (e) { console.log(e); }
     }
 
-    // --- Core Sync Function (Fixes your Sheet Update issue) ---
+    // --- Core Sync Function ---
     async function sendToGoogleSheet(itemsArray) {
         if (itemsArray.length === 0) return false;
-        
-        // Aapki script "data.entries" mang rahi hai, isliye hum use wrap kar rahe hain
         const payload = { 
             entries: itemsArray.map(item => ({
                 module: item.module,
                 image: item.image,
                 remark: item.remark,
-                date: item.datetime.split(',')[0], // Date column ke liye
-                datetime: item.datetime // Full Date Time column ke liye
+                date: item.datetime.split(',')[0],
+                datetime: item.datetime
             }))
         };
-
         try {
             await fetch(WEBAPP_URL, {
                 method: "POST",
-                mode: "no-cors", // Google Script ke liye zaroori
+                mode: "no-cors",
                 headers: { "Content-Type": "text/plain" },
                 body: JSON.stringify(payload)
             });
@@ -94,35 +91,25 @@ document.addEventListener("DOMContentLoaded", () => {
             datetime: document.getElementById("datetime").value,
             synced: false
         };
-
         if (!entry.module) return alert("Pehle Scan karein!");
-
-        // 1. Local table mein dikhao
         barcodeData.push(entry);
-        
-        // 2. Turant Sheet par bhejo
         const ok = await sendToGoogleSheet([entry]);
         if (ok) entry.synced = true;
-
         localStorage.setItem("barcodeData", JSON.stringify(barcodeData));
         updateTable();
-        
-        // Reset UI
         document.getElementById("entryFields").style.display = "none";
         document.getElementById("barcode").value = "";
         document.getElementById("photo").value = "";
         document.getElementById("remark").value = "";
     };
 
-    // --- Update Button: Only sync unsynced data (No repeats) ---
+    // --- Update Button ---
     document.getElementById("syncBtn").onclick = async () => {
         const unsynced = barcodeData.filter(d => !d.synced);
         if (unsynced.length === 0) return alert("Saara data pehle se update hai!");
-
         const btn = document.getElementById("syncBtn");
         btn.innerText = "Updating...";
         btn.disabled = true;
-
         const ok = await sendToGoogleSheet(unsynced);
         if (ok) {
             barcodeData.forEach(d => { if (!d.synced) d.synced = true; });
@@ -136,6 +123,33 @@ document.addEventListener("DOMContentLoaded", () => {
         btn.disabled = false;
     };
 
+    // --- FIX: Copy Table ---
+    document.getElementById("copyBtn").onclick = () => {
+        const table = document.getElementById("table");
+        const range = document.createRange();
+        range.selectNode(table);
+        window.getSelection().removeAllRanges();
+        window.getSelection().addRange(range);
+        document.execCommand("copy");
+        window.getSelection().removeAllRanges();
+        alert("Table copied to clipboard!");
+    };
+
+    // --- FIX: Export CSV ---
+    document.getElementById("exportBtn").onclick = () => {
+        if (barcodeData.length === 0) return alert("Data nahi hai!");
+        let csv = "Serial,Photo,Remark,DateTime\n";
+        barcodeData.forEach(e => {
+            csv += `${e.module},${e.image},${e.remark},${e.datetime}\n`;
+        });
+        const blob = new Blob([csv], { type: "text/csv" });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = "SagarBarcode_Data.csv";
+        a.click();
+    };
+
     // --- Table Display ---
     function updateTable() {
         const table = document.getElementById("table");
@@ -147,7 +161,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 <td>${e.image}</td>
                 <td>${e.remark}</td>
                 <td style="color:${e.synced ? 'green' : 'red'}; font-weight:bold;">${e.synced ? 'Synced' : 'Pending'}</td>
-                <td><button onclick="deleteRow(${i})" style="background:red; color:white; border-radius:5px;">X</button></td>
+                <td><button onclick="deleteRow(${i})" style="background:red; color:white; border-radius:5px; width:auto; padding:5px 10px;">X</button></td>
             `;
         });
         document.getElementById("totalCount").innerText = barcodeData.length;
