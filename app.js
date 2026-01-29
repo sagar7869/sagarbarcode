@@ -21,7 +21,7 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     });
 
-    // --- Audio ---
+    // --- Audio Feedback ---
     function playBeep() {
         try {
             if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
@@ -33,25 +33,24 @@ document.addEventListener("DOMContentLoaded", () => {
         } catch (e) { console.log(e); }
     }
 
-    // --- Core Sync Function (Fixes your Sheet Update issue) ---
+    // --- Core Sync Function (For Sheet Update) ---
     async function sendToGoogleSheet(itemsArray) {
         if (itemsArray.length === 0) return false;
         
-        // Aapki script "data.entries" mang rahi hai, isliye hum use wrap kar rahe hain
         const payload = { 
             entries: itemsArray.map(item => ({
                 module: item.module,
                 image: item.image,
                 remark: item.remark,
-                date: item.datetime.split(',')[0], // Date column ke liye
-                datetime: item.datetime // Full Date Time column ke liye
+                date: item.datetime.split(',')[0],
+                datetime: item.datetime
             }))
         };
 
         try {
             await fetch(WEBAPP_URL, {
                 method: "POST",
-                mode: "no-cors", // Google Script ke liye zaroori
+                mode: "no-cors",
                 headers: { "Content-Type": "text/plain" },
                 body: JSON.stringify(payload)
             });
@@ -85,7 +84,7 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     };
 
-    // --- Submit: Instant Upload ---
+    // --- Submit Logic (Instant Sync) ---
     document.getElementById("submitBtn").onclick = async () => {
         const entry = {
             module: document.getElementById("barcode").value,
@@ -97,24 +96,20 @@ document.addEventListener("DOMContentLoaded", () => {
 
         if (!entry.module) return alert("Pehle Scan karein!");
 
-        // 1. Local table mein dikhao
-        barcodeData.push(entry);
-        
-        // 2. Turant Sheet par bhejo
         const ok = await sendToGoogleSheet([entry]);
         if (ok) entry.synced = true;
 
+        barcodeData.push(entry);
         localStorage.setItem("barcodeData", JSON.stringify(barcodeData));
         updateTable();
         
-        // Reset UI
         document.getElementById("entryFields").style.display = "none";
         document.getElementById("barcode").value = "";
         document.getElementById("photo").value = "";
         document.getElementById("remark").value = "";
     };
 
-    // --- Update Button: Only sync unsynced data (No repeats) ---
+    // --- Update Button (Sync Pending Data) ---
     document.getElementById("syncBtn").onclick = async () => {
         const unsynced = barcodeData.filter(d => !d.synced);
         if (unsynced.length === 0) return alert("Saara data pehle se update hai!");
@@ -130,13 +125,13 @@ document.addEventListener("DOMContentLoaded", () => {
             updateTable();
             alert("Sheet updated successfully!");
         } else {
-            alert("Sync failed! Check internet.");
+            alert("Sync failed! Internet check karein.");
         }
         btn.innerText = "Update Google Sheet";
         btn.disabled = false;
     };
 
-    // --- Table Display ---
+    // --- TABLE DISPLAY ---
     function updateTable() {
         const table = document.getElementById("table");
         table.innerHTML = "<tr><th>Serial</th><th>Photo</th><th>Remark</th><th>Status</th><th>Del</th></tr>";
@@ -147,18 +142,45 @@ document.addEventListener("DOMContentLoaded", () => {
                 <td>${e.image}</td>
                 <td>${e.remark}</td>
                 <td style="color:${e.synced ? 'green' : 'red'}; font-weight:bold;">${e.synced ? 'Synced' : 'Pending'}</td>
-                <td><button onclick="deleteRow(${i})" style="background:red; color:white; border-radius:5px;">X</button></td>
+                <td><button onclick="deleteRow(${i})" style="background:red; color:white; border:none; padding:5px 10px; cursor:pointer;">X</button></td>
             `;
         });
         document.getElementById("totalCount").innerText = barcodeData.length;
     }
 
     window.deleteRow = (i) => {
-        if (confirm("Delete karein?")) {
+        if (confirm("Ise delete karein?")) {
             barcodeData.splice(i, 1);
             localStorage.setItem("barcodeData", JSON.stringify(barcodeData));
             updateTable();
         }
+    };
+
+    // --- FIX: Copy Table Logic ---
+    document.getElementById("copyBtn").onclick = () => {
+        if (barcodeData.length === 0) return alert("Copy karne ke liye data nahi hai!");
+        let text = "Serial\tPhoto\tRemark\tDateTime\tStatus\n";
+        barcodeData.forEach(e => {
+            text += `${e.module}\t${e.image}\t${e.remark}\t${e.datetime}\t${e.synced ? 'Synced' : 'Pending'}\n`;
+        });
+        navigator.clipboard.writeText(text).then(() => alert("Table copied to clipboard!"));
+    };
+
+    // --- FIX: Export CSV Logic ---
+    document.getElementById("exportBtn").onclick = () => {
+        if (barcodeData.length === 0) return alert("Export karne ke liye data nahi hai!");
+        let csv = "Serial,Photo,Remark,DateTime,Status\n";
+        barcodeData.forEach(e => {
+            csv += `"${e.module}","${e.image}","${e.remark}","${e.datetime}","${e.synced ? 'Synced' : 'Pending'}"\n`;
+        });
+        const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement("a");
+        link.setAttribute("href", url);
+        link.setAttribute("download", `SagarBarcode_Data_${new Date().toLocaleDateString()}.csv`);
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
     };
 
     updateTable();
