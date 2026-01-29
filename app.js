@@ -8,7 +8,7 @@ document.addEventListener("DOMContentLoaded", () => {
     let audioCtx = null;
     let isProcessing = false;
 
-    // --- Tab Switching (Internal Wait Fix) ---
+    // --- Tab Switching (Camera Stop Fix) ---
     const tabs = document.querySelectorAll(".tabBtn");
     const sections = document.querySelectorAll(".tabSection");
     tabs.forEach(tab => {
@@ -19,9 +19,10 @@ document.addEventListener("DOMContentLoaded", () => {
             document.getElementById(target).style.display = "block";
             tab.classList.add("activeTab");
             
-            // Internal Fix: Scanner ko wait karke band karna
             if (barcodeScanner && barcodeScanner.isScanning) await barcodeScanner.stop();
             if (qrScanner && qrScanner.isScanning) await qrScanner.stop();
+            document.getElementById("reader").style.display = "none";
+            document.getElementById("qr-reader").style.display = "none";
         });
     });
 
@@ -36,16 +37,26 @@ document.addEventListener("DOMContentLoaded", () => {
         } catch (e) { console.log(e); }
     }
 
-    // --- Barcode Section Logic (Optimized Internal) ---
+    // --- Barcode Section Logic (HIGH SPEED OPTIMIZED) ---
     document.getElementById("startScan").onclick = () => {
         document.getElementById("reader").style.display = "block";
         if (!barcodeScanner) barcodeScanner = new Html5Qrcode("reader");
         
-        // Internal Best Technology for Barcode
+        // --- High Performance Hardware Config ---
         const barcodeConfig = { 
-            fps: 20, 
-            qrbox: { width: 300, height: 150 }, // Rectangular for 1D Barcodes
-            formatsToSupport: [ Html5QrcodeSupportedFormats.CODE_128, Html5QrcodeSupportedFormats.EAN_13, Html5QrcodeSupportedFormats.QR_CODE ]
+            fps: 30, // Max frames for 1-second scanning
+            qrbox: { width: 320, height: 180 }, // Rectangle focus for Barcode
+            // Isse camera ka resolution badhega aur focus lock hoga
+            videoConstraints: {
+                facingMode: "environment",
+                width: { ideal: 1920 }, // 1080p resolution for distance
+                height: { ideal: 1080 },
+                focusMode: "continuous", // Non-stop auto focus
+                whiteBalanceMode: "continuous"
+            },
+            experimentalFeatures: {
+                useBarCodeDetectorIfSupported: true // Native hardware speed
+            }
         };
 
         barcodeScanner.start({ facingMode: "environment" }, barcodeConfig, (code) => {
@@ -60,7 +71,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 document.getElementById("photo").focus();
                 isProcessing = false;
             });
-        });
+        }).catch(err => alert("Camera slow/fail: " + err));
     };
 
     document.getElementById("stopScan").onclick = async () => {
@@ -75,8 +86,15 @@ document.addEventListener("DOMContentLoaded", () => {
         document.getElementById("qr-reader").style.display = "block";
         if (!qrScanner) qrScanner = new Html5Qrcode("qr-reader");
         
-        // Square box for QR
-        qrScanner.start({ facingMode: "environment" }, { fps: 20, qrbox: 250 }, (code) => {
+        qrScanner.start({ facingMode: "environment" }, { 
+            fps: 25, 
+            qrbox: 250,
+            videoConstraints: {
+                facingMode: "environment",
+                width: { ideal: 1280 },
+                height: { ideal: 720 }
+            }
+        }, (code) => {
             playBeep();
             document.getElementById("qrField").value = code;
             qrDataList.push({ data: code, time: new Date().toLocaleString('en-GB') });
@@ -84,7 +102,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
             qrScanner.stop().then(() => {
                 document.getElementById("qr-reader").style.display = "none";
-                alert("QR Scanned Successfully!"); // Aapki language
+                alert("QR Scanned Successfully!");
             });
         });
     };
@@ -115,7 +133,7 @@ document.addEventListener("DOMContentLoaded", () => {
         a.click();
     };
 
-    // --- Submit Logic (Aapka Sync Status Logic) ---
+    // --- Submit Logic (Sync Status Logic) ---
     document.getElementById("submitBtn").onclick = async () => {
         const entry = {
             module: document.getElementById("barcode").value,
@@ -130,7 +148,6 @@ document.addEventListener("DOMContentLoaded", () => {
         localStorage.setItem("barcodeData", JSON.stringify(barcodeData));
         updateTable();
 
-        // Background Sync
         const ok = await sendToGoogleSheet([entry]);
         if (ok) {
             barcodeData[barcodeData.length - 1].synced = true;
@@ -224,3 +241,4 @@ document.addEventListener("DOMContentLoaded", () => {
 
     updateTable();
 });
+                    
