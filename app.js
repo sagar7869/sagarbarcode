@@ -4,7 +4,6 @@ document.addEventListener("DOMContentLoaded", () => {
     let barcodeData = JSON.parse(localStorage.getItem("barcodeData") || "[]");
     let qrDataList = JSON.parse(localStorage.getItem("qrDataList") || "[]");
     let barcodeScanner = null;
-    let qrScanner = null;
     let audioCtx = null;
     let isProcessing = false;
 
@@ -18,13 +17,11 @@ document.addEventListener("DOMContentLoaded", () => {
             tabs.forEach(t => t.classList.remove("activeTab"));
             document.getElementById(target).style.display = "block";
             tab.classList.add("activeTab");
-            // Switch karte waqt purane scanner band karein
             if (barcodeScanner?.isScanning) barcodeScanner.stop();
-            if (qrScanner?.isScanning) qrScanner.stop();
         });
     });
 
-    // --- Audio Feedback ---
+    // --- Audio ---
     function playBeep() {
         try {
             if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
@@ -36,69 +33,38 @@ document.addEventListener("DOMContentLoaded", () => {
         } catch (e) { console.log(e); }
     }
 
+    // --- Core Sync Function (Fixes your Sheet Update issue) ---
+    async function sendToGoogleSheet(itemsArray) {
+        if (itemsArray.length === 0) return false;
+        
+        // Aapki script "data.entries" mang rahi hai, isliye hum use wrap kar rahe hain
+        const payload = { 
+            entries: itemsArray.map(item => ({
+                module: item.module,
+                image: item.image,
+                remark: item.remark,
+                date: item.datetime.split(',')[0], // Date column ke liye
+                datetime: item.datetime // Full Date Time column ke liye
+            }))
+        };
+
+        try {
+            await fetch(WEBAPP_URL, {
+                method: "POST",
+                mode: "no-cors", // Google Script ke liye zaroori
+                headers: { "Content-Type": "text/plain" },
+                body: JSON.stringify(payload)
+            });
+            return true;
+        } catch (e) {
+            console.error(e);
+            return false;
+        }
+    }
+
+    // --- Barcode Scanner Logic ---
     const scanConfig = { fps: 20, qrbox: { width: 250, height: 250 } };
 
-    // --- QR SCANNER LOGIC ---
-    document.getElementById("startQR").onclick = () => {
-        document.getElementById("qr-reader").style.display = "block";
-        if (!qrScanner) qrScanner = new Html5Qrcode("qr-reader");
-        qrScanner.start({ facingMode: "environment" }, scanConfig, (code) => {
-            playBeep();
-            document.getElementById("qrField").value = code;
-            
-            // QR Data ko list mein save karein
-            qrDataList.push({ data: code, time: new Date().toLocaleString() });
-            localStorage.setItem("qrDataList", JSON.stringify(qrDataList));
-            
-            if (navigator.vibrate) navigator.vibrate(100);
-        });
-    };
-
-    document.getElementById("stopQR").onclick = async () => {
-        if (qrScanner?.isScanning) {
-            await qrScanner.stop();
-            document.getElementById("qr-reader").style.display = "none";
-        }
-    };
-
-    // --- QR COPY & EXPORT (Naye Buttons) ---
-    // Agar aapne HTML mein IDs 'copyQR' aur 'exportQR' di hain:
-    const cpQR = document.getElementById("copyQR");
-    if(cpQR) {
-        cpQR.onclick = () => {
-            if (qrDataList.length === 0) return alert("QR data nahi hai!");
-            let text = "QR Data\tTime\n";
-            qrDataList.forEach(e => text += `${e.data}\t${e.time}\n`);
-            
-            const el = document.createElement('textarea');
-            el.value = text;
-            document.body.appendChild(el);
-            el.select();
-            document.execCommand('copy');
-            document.body.removeChild(el);
-            alert("QR Table copied!");
-        };
-    }
-
-    const exQR = document.getElementById("exportQR");
-    if(exQR) {
-        exQR.onclick = () => {
-            if (qrDataList.length === 0) return alert("Export ke liye QR data nahi hai!");
-            let csv = "QR Data,Time\n";
-            qrDataList.forEach(e => csv += `"${e.data}","${e.time}"\n`);
-            
-            const blob = new Blob([csv], { type: 'text/csv' });
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = "QR_Data_Export.csv";
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
-        };
-    }
-
-    // --- BARCODE SCANNER LOGIC (Pehle wala) ---
     document.getElementById("startScan").onclick = () => {
         document.getElementById("reader").style.display = "block";
         if (!barcodeScanner) barcodeScanner = new Html5Qrcode("reader");
@@ -106,16 +72,94 @@ document.addEventListener("DOMContentLoaded", () => {
             if (isProcessing) return;
             isProcessing = true;
             playBeep();
+            if (navigator.vibrate) navigator.vibrate(100);
+            
             barcodeScanner.stop().then(() => {
                 document.getElementById("reader").style.display = "none";
                 document.getElementById("entryFields").style.display = "block";
                 document.getElementById("barcode").value = code;
                 document.getElementById("datetime").value = new Date().toLocaleString('en-GB');
+                document.getElementById("photo").focus();
                 isProcessing = false;
             });
         });
     };
 
-    // Baaki Submit, Sync, Table update functions pehle jaise hi raheinge...
-    // (Upar diye gaye function names use karein)
+    // --- Submit: Instant Upload ---
+    document.getElementById("submitBtn").onclick = async () => {
+        const entry = {
+            module: document.getElementById("barcode").value,
+            image: document.getElementById("photo").value,
+            remark: document.getElementById("remark").value,
+            datetime: document.getElementById("datetime").value,
+            synced: false
+        };
+
+        if (!entry.module) return alert("Pehle Scan karein!");
+
+        // 1. Local table mein dikhao
+        barcodeData.push(entry);
+        
+        // 2. Turant Sheet par bhejo
+        const ok = await sendToGoogleSheet([entry]);
+        if (ok) entry.synced = true;
+
+        localStorage.setItem("barcodeData", JSON.stringify(barcodeData));
+        updateTable();
+        
+        // Reset UI
+        document.getElementById("entryFields").style.display = "none";
+        document.getElementById("barcode").value = "";
+        document.getElementById("photo").value = "";
+        document.getElementById("remark").value = "";
+    };
+
+    // --- Update Button: Only sync unsynced data (No repeats) ---
+    document.getElementById("syncBtn").onclick = async () => {
+        const unsynced = barcodeData.filter(d => !d.synced);
+        if (unsynced.length === 0) return alert("Saara data pehle se update hai!");
+
+        const btn = document.getElementById("syncBtn");
+        btn.innerText = "Updating...";
+        btn.disabled = true;
+
+        const ok = await sendToGoogleSheet(unsynced);
+        if (ok) {
+            barcodeData.forEach(d => { if (!d.synced) d.synced = true; });
+            localStorage.setItem("barcodeData", JSON.stringify(barcodeData));
+            updateTable();
+            alert("Sheet updated successfully!");
+        } else {
+            alert("Sync failed! Check internet.");
+        }
+        btn.innerText = "Update Google Sheet";
+        btn.disabled = false;
+    };
+
+    // --- Table Display ---
+    function updateTable() {
+        const table = document.getElementById("table");
+        table.innerHTML = "<tr><th>Serial</th><th>Photo</th><th>Remark</th><th>Status</th><th>Del</th></tr>";
+        barcodeData.forEach((e, i) => {
+            const row = table.insertRow(-1);
+            row.innerHTML = `
+                <td>${e.module}</td>
+                <td>${e.image}</td>
+                <td>${e.remark}</td>
+                <td style="color:${e.synced ? 'green' : 'red'}; font-weight:bold;">${e.synced ? 'Synced' : 'Pending'}</td>
+                <td><button onclick="deleteRow(${i})" style="background:red; color:white; border-radius:5px;">X</button></td>
+            `;
+        });
+        document.getElementById("totalCount").innerText = barcodeData.length;
+    }
+
+    window.deleteRow = (i) => {
+        if (confirm("Delete karein?")) {
+            barcodeData.splice(i, 1);
+            localStorage.setItem("barcodeData", JSON.stringify(barcodeData));
+            updateTable();
+        }
+    };
+
+    updateTable();
 });
