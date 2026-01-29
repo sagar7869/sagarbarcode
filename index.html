@@ -60,10 +60,19 @@
 </section>
 
 <section id="qrTab" class="tabSection">
+  <div class="card">
+    <strong>QR Code Scanner</strong>
+  </div>
+  
   <div id="qr-reader" class="cameraPreview"></div>
+  
   <button id="startQR">Start QR Scan</button>
   <button id="stopQR">Stop QR Scan</button>
-  <input id="qrField" readonly>
+  
+  <input id="qrField" placeholder="Scanned QR Data" readonly style="margin-top: 15px;">
+  
+  <button id="copyQR">Copy QR Data</button>
+  <button id="exportQR">Export QR CSV</button>
 </section>
 
 <footer>Design by – Sagar Herole</footer>
