@@ -1,28 +1,23 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>SagarBarcode PWA</title>
-
-<link rel="stylesheet" href="style.css">
-<link rel="manifest" href="manifest.json">
-<script src="https://unpkg.com/html5-qrcode"></script>
-
-<script>
-  if ("serviceWorker" in navigator) {
-    window.addEventListener("load", () => {
-      navigator.serviceWorker.register("sw.js");
-    });
-  }
-</script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SagarBarcode Scanner</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="manifest" href="manifest.json">
+    <script src="https://unpkg.com/html5-qrcode"></script>
+    <script>
+      if ("serviceWorker" in navigator) {
+        window.addEventListener("load", () => {
+          navigator.serviceWorker.register("sw.js");
+        });
+      }
+    </script>
 </head>
-
 <body>
 
-<header>
-  <h1>SagarBarcode Scanner</h1>
-</header>
+<header><h1>SagarBarcode Scanner</h1></header>
 
 <nav>
   <button class="tabBtn activeTab" data-tab="barcodeTab">Barcode</button>
@@ -37,9 +32,8 @@
 
   <div class="card">
     <div id="reader" class="cameraPreview" style="position:relative;">
-        <button id="torchBtn" class="torch-btn" style="display:none;">⚡</button>
+        <button id="torchBtn" class="torch-btn" style="display:none;" onclick="toggleFlash('torchBtn')">⚡</button>
     </div>
-
     <button id="startScan" autofocus>Start Scan</button>
     <button id="stopScan">Stop Scan</button>
 
@@ -49,19 +43,12 @@
       <textarea id="remark" placeholder="Remark" rows="2"></textarea>
       <input id="datetime" readonly>
       <button id="submitBtn">Submit</button>
-      <button id="retryBtn">Retry</button>
     </div>
   </div>
 
   <div class="table-wrapper">
     <table id="table">
-      <tr>
-        <th>Serial</th>
-        <th>Photo</th>
-        <th>Remark</th>
-        <th>Status</th>
-        <th>Del</th>
-      </tr>
+      <tr><th>Serial</th><th>Photo</th><th>Remark</th><th>Status</th><th>Del</th></tr>
     </table>
   </div>
 
@@ -71,21 +58,14 @@
 </section>
 
 <section id="qrTab" class="tabSection">
-  <div class="card">
-    <strong>QR Code Scanner</strong>
-  </div>
-  
+  <div class="card"><strong>QR Code Scanner</strong></div>
   <div id="qr-reader" class="cameraPreview" style="position:relative;">
-      <button id="torchBtnQR" class="torch-btn" style="display:none;">⚡</button>
+      <button id="torchBtnQR" class="torch-btn" style="display:none;" onclick="toggleFlash('torchBtnQR')">⚡</button>
   </div>
-  
   <button id="startQR">Start QR Scan</button>
   <button id="stopQR">Stop QR Scan</button>
-  
-  <input id="qrField" placeholder="Scanned QR Data" readonly style="margin-top: 15px;">
-  
+  <input id="qrField" placeholder="Scanned QR Data" readonly style="margin-top:15px;">
   <button id="copyQR">Copy QR Data</button>
-  <button id="exportQR">Export QR CSV</button>
 </section>
 
 <footer>Design by – Sagar Herole</footer>
