@@ -217,3 +217,24 @@ input, textarea {
   z-index: 9999;
   pointer-events: none;
 }
+.torch-btn {
+  position: absolute;
+  top: 15px;
+  right: 15px;
+  width: 45px !important;
+  height: 45px !important;
+  background: rgba(0, 0, 0, 0.5) !important;
+  color: #fff;
+  border-radius: 50% !important;
+  border: 2px solid #fff !important;
+  z-index: 999;
+  display: none; /* Default hidden */
+  font-size: 20px;
+  cursor: pointer;
+  box-shadow: 0 0 10px rgba(0,0,0,0.5);
+}
+.torch-btn.active {
+  background: #ffeb3b !important;
+  color: #000;
+  border-color: #ffeb3b !important;
+}
