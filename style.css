@@ -65,12 +65,11 @@ nav {
   background: #fff;
 }
 
-/* ---------- PROFESSIONAL CAMERA UI (Updated for Full Screen) ---------- */
+/* ---------- PROFESSIONAL CAMERA UI (FIXED FOR FULL VIEW) ---------- */
 .cameraPreview {
   display: none;
-  width: 100%;           /* Pura area cover karne ke liye */
-  max-width: 350px;      /* Maximum size control */
-  height: 350px;         /* Video box ki height */
+  width: 320px;
+  height: 320px;
   background: #000;
   border-radius: 25px;
   overflow: hidden;
@@ -80,11 +79,11 @@ nav {
   transition: all 0.3s ease;
 }
 
-/* YAHI HAI MAIN FIX: Video ko stretch karne ke liye */
+/* Isse video khinch kar poore box mein fit ho jayegi */
 .cameraPreview video {
   width: 100% !important;
   height: 100% !important;
-  object-fit: cover !important; /* Isse black borders gayab ho jayenge */
+  object-fit: fill !important; 
 }
 
 /* Laser Scan Line Animation */
@@ -106,26 +105,19 @@ nav {
   50% { top: 80%; opacity: 1; }
 }
 
-/* Corner Brackets / Square Focus Area */
+/* Corner Brackets */
 .cameraPreview::before {
   content: "";
   position: absolute;
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  width: 250px;           /* Focus box thoda bada kiya */
-  height: 180px;          /* Barcode ke liye rectangular shape */
+  width: 220px;
+  height: 220px;
   border: 2px solid rgba(255, 255, 255, 0.5);
-  box-shadow: 0 0 0 500px rgba(0, 0, 0, 0.4); /* Overlay thoda light kiya clear view ke liye */
+  box-shadow: 0 0 0 500px rgba(0, 0, 0, 0.6);
   z-index: 5;
-  border-radius: 15px;
-}
-
-/* Instant Scan Success State */
-.scan-success {
-  border-color: #00ff00 !important;
-  transform: scale(1.03);
-  box-shadow: 0 0 30px rgba(0, 255, 0, 0.5);
+  border-radius: 20px;
 }
 
 /* ---------- BUTTONS & INPUTS ---------- */
@@ -141,43 +133,14 @@ button {
   transition: transform 0.1s;
 }
 
-button:active {
-  transform: scale(0.97);
-}
+button:active { transform: scale(0.97); }
+#startScan, #startQR { background: #ff9800; color: white; }
+#stopScan, #stopQR { background: #546e7a; color: white; }
+#submitBtn { background: #4caf50; color: white; margin-top: 15px; }
+#copyBtn, #copyQR { background: #2196f3; color: white; }
+#exportBtn, #exportQR { background: #673ab7; color: white; }
+#syncBtn { background: #ff5722; color: white; border: 2px solid #e64a19; }
 
-#startScan, #startQR {
-  background: #ff9800;
-  color: white;
-}
-
-#stopScan, #stopQR {
-  background: #546e7a;
-  color: white;
-}
-
-#submitBtn {
-  background: #4caf50;
-  color: white;
-  margin-top: 15px;
-}
-
-#copyBtn, #copyQR {
-  background: #2196f3;
-  color: white;
-}
-
-#exportBtn, #exportQR {
-  background: #673ab7;
-  color: white;
-}
-
-#syncBtn {
-  background: #ff5722;
-  color: white;
-  border: 2px solid #e64a19;
-}
-
-/* Accessibility polish */
 input, textarea {
   width: 100%;
   padding: 12px;
@@ -189,39 +152,7 @@ input, textarea {
 }
 
 /* ---------- TABLE DESIGN ---------- */
-.table-wrapper {
-  overflow-x: auto;
-  margin-top: 20px;
-}
-
-#table {
-  width: 100%;
-  border-collapse: collapse;
-  background: white;
-}
-
-#table th {
-  background: #f8f9fa;
-  padding: 12px 8px;
-  border-bottom: 2px solid #eee;
-  font-size: 12px;
-  color: #666;
-}
-
-#table td {
-  padding: 10px 5px;
-  border-bottom: 1px solid #f1f1f1;
-  font-size: 13px;
-}
-
-/* Flash Effect Overlay */
-.flash-effect {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: rgba(255, 255, 255, 0.9);
-  z-index: 9999;
-  pointer-events: none;
-}
+.table-wrapper { overflow-x: auto; margin-top: 20px; }
+#table { width: 100%; border-collapse: collapse; background: white; }
+#table th { background: #f8f9fa; padding: 12px 8px; border-bottom: 2px solid #eee; font-size: 12px; color: #666; }
+#table td { padding: 10px 5px; border-bottom: 1px solid #f1f1f1; font-size: 13px; }
