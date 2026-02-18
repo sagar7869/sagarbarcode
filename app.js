@@ -86,12 +86,19 @@ document.addEventListener("DOMContentLoaded", () => {
     };
 
 
-    document.getElementById("stopScan").onclick = async () => {
-        if (barcodeScanner && barcodeScanner.isScanning) {
+    // --- UPDATED STOP SCAN CODE ---
+document.getElementById("stopScan").onclick = async () => {
+    if (barcodeScanner) {
+        try {
             await barcodeScanner.stop();
-            document.getElementById("reader").style.display = "none";
+            console.log("Scanner stopped");
+        } catch (err) {
+            console.log("Error stopping scanner: ", err);
         }
-    };
+        document.getElementById("reader").style.display = "none";
+    }
+};
+
 
     // --- QR Section Logic (Optimized Internal) ---
     document.getElementById("startQR").onclick = () => {
