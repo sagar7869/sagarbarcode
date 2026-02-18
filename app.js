@@ -52,10 +52,7 @@ document.addEventListener("DOMContentLoaded", () => {
         Html5QrcodeSupportedFormats.CODE_39,
         Html5QrcodeSupportedFormats.EAN_13,
         Html5QrcodeSupportedFormats.EAN_8
-    ],
-    videoConstraints: {
-        facingMode: { exact: "environment" }
-    }
+    ]
 };
         barcodeScanner.start({ facingMode: "environment" }, barcodeConfig, (code) => {
             if (isProcessing) return;
