@@ -39,18 +39,15 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // --- Barcode Section Logic (HIGH SPEED OPTIMIZED) ---
     // --- FIXED CODE IN APP.JS ---
+    // --- app.js mein 'startScan' function ke andar ---
     document.getElementById("startScan").onclick = () => {
         document.getElementById("reader").style.display = "block";
+        if (!barcodeScanner) barcodeScanner = new Html5Qrcode("reader");
         
-        // Correct initialization check
-        if (!barcodeScanner) {
-            barcodeScanner = new Html5Qrcode("reader");
-        }
-        
-        // Configuration
+        // Configuration check karein
         const barcodeConfig = {
-            fps: 10, // Lowered FPS for better mobile stability
-            qrbox: 250, // Added a specific box size for better detection
+            fps: 10, // FPS 10-15 ke beech rakhein
+            qrbox: 250, // 'null' ki jagah '250' karein
             aspectRatio: 1.777,
             formatsToSupport: [
                 Html5QrcodeSupportedFormats.CODE_128,
@@ -59,6 +56,8 @@ document.addEventListener("DOMContentLoaded", () => {
                 Html5QrcodeSupportedFormats.EAN_8
             ]
         };
+        // ... rest of the code
+        
         
         // Start Scanning
         barcodeScanner.start(
