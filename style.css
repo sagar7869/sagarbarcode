@@ -80,11 +80,13 @@ nav {
 }
 
 /* Isse video khinch kar poore box mein fit ho jayegi */
+/* --- FIXED CODE --- */
 .cameraPreview video {
   width: 100% !important;
   height: 100% !important;
-  object-fit: fill !important; 
+  object-fit: cover !important; /* Change to cover */
 }
+
 
 /* Laser Scan Line Animation */
 .cameraPreview::after {
