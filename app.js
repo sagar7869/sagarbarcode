@@ -43,22 +43,20 @@ document.addEventListener("DOMContentLoaded", () => {
         if (!barcodeScanner) barcodeScanner = new Html5Qrcode("reader");
         
         // --- High Performance Hardware Config ---
-        const barcodeConfig = { 
-            fps: 30, // Max frames for 1-second scanning
-            qrbox: { width: 320, height: 180 }, // Rectangle focus for Barcode
-            // Isse camera ka resolution badhega aur focus lock hoga
-            videoConstraints: {
-                facingMode: "environment",
-                width: { ideal: 1920 }, // 1080p resolution for distance
-                height: { ideal: 1080 },
-                focusMode: "continuous", // Non-stop auto focus
-                whiteBalanceMode: "continuous"
-            },
-            experimentalFeatures: {
-                useBarCodeDetectorIfSupported: true // Native hardware speed
-            }
-        };
-
+        const barcodeConfig = {
+    fps: 25,
+    qrbox: null, // FULL camera frame use karega
+    aspectRatio: 1.777, // 16:9 mobile camera
+    formatsToSupport: [
+        Html5QrcodeSupportedFormats.CODE_128,
+        Html5QrcodeSupportedFormats.CODE_39,
+        Html5QrcodeSupportedFormats.EAN_13,
+        Html5QrcodeSupportedFormats.EAN_8
+    ],
+    videoConstraints: {
+        facingMode: { exact: "environment" }
+    }
+};
         barcodeScanner.start({ facingMode: "environment" }, barcodeConfig, (code) => {
             if (isProcessing) return;
             isProcessing = true;
