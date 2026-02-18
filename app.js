@@ -19,7 +19,7 @@ document.addEventListener("DOMContentLoaded", () => {
             document.getElementById(target).style.display = "block";
             tab.classList.add("activeTab");
             
-            if (barcodeScanner && barcodeScanner.isScanning) await barcodeScanner.stop();
+            if (barcodeScanner) await barcodeScanner.stop();
             if (qrScanner && qrScanner.isScanning) await qrScanner.stop();
             document.getElementById("reader").style.display = "none";
             document.getElementById("qr-reader").style.display = "none";
