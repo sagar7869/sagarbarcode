@@ -38,7 +38,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     // --- Barcode Section Logic (HIGH SPEED OPTIMIZED) ---
-    document.getElementById("startScan").onclick = () => {
+    document.getElementById("startScan").onclick = async () => {
         document.getElementById("reader").style.display = "block";
         if (!barcodeScanner) barcodeScanner = new Html5Qrcode("reader");
         
@@ -55,7 +55,7 @@ document.addEventListener("DOMContentLoaded", () => {
     ]
 };
         barcodeScanner.start(
-    { deviceId: { exact: (await Html5Qrcode.getCameras())[0].id } },
+   { facingMode: "environment" },
     barcodeConfig,
     (code) => {
         if (isProcessing) return;
