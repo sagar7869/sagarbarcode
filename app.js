@@ -38,40 +38,53 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     // --- Barcode Section Logic (HIGH SPEED OPTIMIZED) ---
-    document.getElementById("startScan").onclick = async () => {
+    // --- FIXED CODE IN APP.JS ---
+    document.getElementById("startScan").onclick = () => {
         document.getElementById("reader").style.display = "block";
-        if (!barcodeScanner) barcodeScanner = new Html5Qrcode("reader");
         
-        // --- High Performance Hardware Config ---
+        // Correct initialization check
+        if (!barcodeScanner) {
+            barcodeScanner = new Html5Qrcode("reader");
+        }
+        
+        // Configuration
         const barcodeConfig = {
-    fps: 25,
-    qrbox: null, // FULL camera frame use karega
-    aspectRatio: 1.777, // 16:9 mobile camera
-    formatsToSupport: [
-        Html5QrcodeSupportedFormats.CODE_128,
-        Html5QrcodeSupportedFormats.CODE_39,
-        Html5QrcodeSupportedFormats.EAN_13,
-        Html5QrcodeSupportedFormats.EAN_8
-    ]
-};
+            fps: 10, // Lowered FPS for better mobile stability
+            qrbox: 250, // Added a specific box size for better detection
+            aspectRatio: 1.777,
+            formatsToSupport: [
+                Html5QrcodeSupportedFormats.CODE_128,
+                Html5QrcodeSupportedFormats.CODE_39,
+                Html5QrcodeSupportedFormats.EAN_13,
+                Html5QrcodeSupportedFormats.EAN_8
+            ]
+        };
+        
+        // Start Scanning
         barcodeScanner.start(
-   { facingMode: "environment" },
-    barcodeConfig,
-    (code) => {
-        if (isProcessing) return;
-        isProcessing = true;
-        playBeep();
+            { facingMode: "environment" },
+            barcodeConfig,
+            (code) => {
+                if (isProcessing) return;
+                isProcessing = true;
+                playBeep();
 
-        barcodeScanner.stop().then(() => {
+                // Stop scanning immediately after detection
+                barcodeScanner.stop().then(() => {
+                    document.getElementById("reader").style.display = "none";
+                    document.getElementById("entryFields").style.display = "block";
+                    document.getElementById("barcode").value = code;
+                    document.getElementById("datetime").value = new Date().toLocaleString('en-GB');
+                    document.getElementById("photo").focus();
+                    isProcessing = false;
+                }).catch(err => console.log("Stop Error: ", err));
+            }
+        ).catch(err => {
+            alert("Camera error: " + err);
             document.getElementById("reader").style.display = "none";
-            document.getElementById("entryFields").style.display = "block";
-            document.getElementById("barcode").value = code;
-            document.getElementById("datetime").value = new Date().toLocaleString('en-GB');
-            document.getElementById("photo").focus();
-            isProcessing = false;
         });
-    }
-).catch(err => alert("Camera error: " + err));
+    };
+
 
     document.getElementById("stopScan").onclick = async () => {
         if (barcodeScanner && barcodeScanner.isScanning) {
