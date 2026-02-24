@@ -39,40 +39,43 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // --- Barcode Section Logic (HIGH SPEED OPTIMIZED) ---
     document.getElementById("startScan").onclick = () => {
-        document.getElementById("reader").style.display = "block";
-        if (!barcodeScanner) barcodeScanner = new Html5Qrcode("reader");
-        
-        // --- High Performance Hardware Config ---
-        const barcodeConfig = { 
-            fps: 30, // Max frames for 1-second scanning
-            qrbox: { width: 320, height: 180 }, // Rectangle focus for Barcode
-            // Isse camera ka resolution badhega aur focus lock hoga
-            videoConstraints: {
-                facingMode: "environment",
-                width: { ideal: 1920 }, // 1080p resolution for distance
-                height: { ideal: 1080 },
-                focusMode: "continuous", // Non-stop auto focus
-                whiteBalanceMode: "continuous"
-            },
-            experimentalFeatures: {
-                useBarCodeDetectorIfSupported: true // Native hardware speed
-            }
-        };
+    const readerElem = document.getElementById("reader");
+    const stopBtn = document.getElementById("stopScan");
+    
+    readerElem.style.display = "block";
+    readerElem.classList.add("full-view"); // Full screen class add karein
+    stopBtn.classList.add("floating-btn"); // Button ko upar layein
 
-        barcodeScanner.start({ facingMode: "environment" }, barcodeConfig, (code) => {
-            if (isProcessing) return;
-            isProcessing = true;
-            playBeep();
-            barcodeScanner.stop().then(() => {
-                document.getElementById("reader").style.display = "none";
-                document.getElementById("entryFields").style.display = "block";
-                document.getElementById("barcode").value = code;
-                document.getElementById("datetime").value = new Date().toLocaleString('en-GB');
-                document.getElementById("photo").focus();
-                isProcessing = false;
-            });
-        }).catch(err => alert("Camera slow/fail: " + err));
+    if (!barcodeScanner) barcodeScanner = new Html5Qrcode("reader");
+    
+    const barcodeConfig = { 
+        fps: 25, 
+        // qrbox ko wide rakhein taaki aapka lamba barcode fit ho jaye
+        qrbox: { width: 350, height: 150 }, 
+        aspectRatio: 1.0,
+        formatsToSupport: [ Html5QrcodeSupportedFormats.CODE_128 ] // Direct format target
     };
+
+    barcodeScanner.start({ facingMode: "environment" }, barcodeConfig, (code) => {
+        if (isProcessing) return;
+        isProcessing = true;
+        playBeep();
+        
+        // Scan hote hi full view band karein
+        barcodeScanner.stop().then(() => {
+            readerElem.classList.remove("full-view");
+            stopBtn.classList.remove("floating-btn");
+            readerElem.style.display = "none";
+            
+            document.getElementById("entryFields").style.display = "block";
+            document.getElementById("barcode").value = code;
+            document.getElementById("datetime").value = new Date().toLocaleString('en-GB');
+            document.getElementById("photo").focus();
+            isProcessing = false;
+        });
+    });
+};
+    
 
     document.getElementById("stopScan").onclick = async () => {
         if (barcodeScanner && barcodeScanner.isScanning) {
