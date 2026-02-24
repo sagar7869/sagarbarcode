@@ -7,8 +7,12 @@ document.addEventListener("DOMContentLoaded", () => {
     let qrScanner = null;
     let audioCtx = null;
     let isProcessing = false;
+    
+    // Flash aur Zoom states
+    let isFlashOn = false;
+    let currentZoom = 1;
 
-    // --- Tab Switching (Camera Stop Fix) ---
+    // --- Tab Switching ---
     const tabs = document.querySelectorAll(".tabBtn");
     const sections = document.querySelectorAll(".tabSection");
     tabs.forEach(tab => {
@@ -19,10 +23,8 @@ document.addEventListener("DOMContentLoaded", () => {
             document.getElementById(target).style.display = "block";
             tab.classList.add("activeTab");
             
-            if (barcodeScanner && barcodeScanner.isScanning) await barcodeScanner.stop();
-            if (qrScanner && qrScanner.isScanning) await qrScanner.stop();
-            document.getElementById("reader").style.display = "none";
-            document.getElementById("qr-reader").style.display = "none";
+            if (barcodeScanner && barcodeScanner.isScanning) await stopBarcodeScanner();
+            if (qrScanner && qrScanner.isScanning) await stopQRScanner();
         });
     });
 
@@ -37,107 +39,115 @@ document.addEventListener("DOMContentLoaded", () => {
         } catch (e) { console.log(e); }
     }
 
-    // --- Barcode Section Logic (HIGH SPEED OPTIMIZED) ---
-    
-    // --- Start Scan Logic ---
-document.getElementById("startScan").onclick = () => {
-    const readerElem = document.getElementById("reader");
-    const stopBtn = document.getElementById("stopScan");
-    
-    // UI ko Full Screen mode mein dalo
-    readerElem.style.display = "block";
-    readerElem.classList.add("full-view");
-    stopBtn.classList.add("floating-btn");
-    document.body.style.overflow = "hidden"; // Scroll band karo
+    // --- FLASH & ZOOM LOGIC (Common Function) ---
+    async function toggleFlash(scanner, btnId) {
+        if (!scanner || !scanner.isScanning) return;
+        isFlashOn = !isFlashOn;
+        try {
+            await scanner.applyVideoConstraints({ advanced: [{ torch: isFlashOn }] });
+            document.getElementById(btnId).innerText = isFlashOn ? "Flash ON" : "Flash Off";
+        } catch (e) { alert("Flash not supported on this device"); }
+    }
 
-    if (!barcodeScanner) barcodeScanner = new Html5Qrcode("reader");
-    
-    // High Speed Config
-    const config = { fps: 30, qrbox: null, aspectRatio: 1.0 };
+    async function toggleZoom(scanner, btnId) {
+        if (!scanner || !scanner.isScanning) return;
+        currentZoom = (currentZoom === 1) ? 2 : 1;
+        try {
+            await scanner.applyVideoConstraints({ advanced: [{ zoom: currentZoom }] });
+            document.getElementById(btnId).innerText = "Zoom " + currentZoom + "x";
+        } catch (e) { alert("Zoom not supported"); }
+    }
 
-    barcodeScanner.start({ facingMode: "environment" }, config, (code) => {
-        if (isProcessing) return;
-        isProcessing = true;
-        playBeep();
-        barcodeScanner.stop().then(() => {
-            // UI ko wapas purana (Orange Home) mode mein dalo
+    // --- BARCODE SECTION ---
+    document.getElementById("startScan").onclick = () => {
+        const readerElem = document.getElementById("reader");
+        const stopBtn = document.getElementById("stopScan");
+        
+        readerElem.style.display = "block";
+        readerElem.classList.add("full-view");
+        stopBtn.classList.add("floating-btn");
+        document.body.style.overflow = "hidden";
+
+        if (!barcodeScanner) barcodeScanner = new Html5Qrcode("reader");
+        
+        barcodeScanner.start({ facingMode: "environment" }, { fps: 30, qrbox: null }, (code) => {
+            if (isProcessing) return;
+            isProcessing = true;
+            playBeep();
+            stopBarcodeScanner(code);
+        });
+    };
+
+    async function stopBarcodeScanner(code = null) {
+        if (barcodeScanner && barcodeScanner.isScanning) {
+            await barcodeScanner.stop();
+            const readerElem = document.getElementById("reader");
             readerElem.classList.remove("full-view");
-            stopBtn.classList.remove("floating-btn");
+            document.getElementById("stopScan").classList.remove("floating-btn");
             readerElem.style.display = "none";
             document.body.style.overflow = "auto";
             
-            document.getElementById("entryFields").style.display = "block";
-            document.getElementById("barcode").value = code;
+            // Flash/Zoom UI reset
+            isFlashOn = false;
+            currentZoom = 1;
+            document.getElementById("torchBtn").innerText = "Flash Off";
+            document.getElementById("zoomBtn").innerText = "Zoom 1x";
+
+            if (code) {
+                document.getElementById("entryFields").style.display = "block";
+                document.getElementById("barcode").value = code;
+                document.getElementById("datetime").value = new Date().toLocaleString('en-GB');
+            }
             isProcessing = false;
-        });
-    });
-};
-
-// Stop button logic
-document.getElementById("stopScan").onclick = async () => {
-    if (barcodeScanner && barcodeScanner.isScanning) {
-        await barcodeScanner.stop();
-        document.getElementById("reader").classList.remove("full-view");
-        document.getElementById("stopScan").classList.remove("floating-btn");
-        document.getElementById("reader").style.display = "none";
-        document.body.style.overflow = "auto";
+        }
     }
-};
-    
 
-    // --- QR Section Logic (Optimized Internal) ---
+    document.getElementById("stopScan").onclick = () => stopBarcodeScanner();
+    document.getElementById("torchBtn").onclick = (e) => { e.stopPropagation(); toggleFlash(barcodeScanner, "torchBtn"); };
+    document.getElementById("zoomBtn").onclick = (e) => { e.stopPropagation(); toggleZoom(barcodeScanner, "zoomBtn"); };
+
+    // --- QR SECTION ---
     document.getElementById("startQR").onclick = () => {
-        document.getElementById("qr-reader").style.display = "block";
+        const qrElem = document.getElementById("qr-reader");
+        const stopBtnQR = document.getElementById("stopQR");
+
+        qrElem.style.display = "block";
+        qrElem.classList.add("full-view");
+        stopBtnQR.classList.add("floating-btn");
+
         if (!qrScanner) qrScanner = new Html5Qrcode("qr-reader");
         
-        qrScanner.start({ facingMode: "environment" }, { 
-            fps: 25, 
-            qrbox: 250,
-            videoConstraints: {
-                facingMode: "environment",
-                width: { ideal: 1280 },
-                height: { ideal: 720 }
-            }
-        }, (code) => {
+        qrScanner.start({ facingMode: "environment" }, { fps: 25, qrbox: null }, (code) => {
             playBeep();
             document.getElementById("qrField").value = code;
             qrDataList.push({ data: code, time: new Date().toLocaleString('en-GB') });
             localStorage.setItem("qrDataList", JSON.stringify(qrDataList));
-
-            qrScanner.stop().then(() => {
-                document.getElementById("qr-reader").style.display = "none";
-                alert("QR Scanned Successfully!");
-            });
+            stopQRScanner();
+            alert("QR Scanned Successfully!");
         });
     };
 
-    document.getElementById("stopQR").onclick = async () => {
+    async function stopQRScanner() {
         if (qrScanner && qrScanner.isScanning) {
             await qrScanner.stop();
-            document.getElementById("qr-reader").style.display = "none";
+            const qrElem = document.getElementById("qr-reader");
+            qrElem.classList.remove("full-view");
+            document.getElementById("stopQR").classList.remove("floating-btn");
+            qrElem.style.display = "none";
+            
+            // Reset Flash/Zoom for QR
+            isFlashOn = false;
+            currentZoom = 1;
+            document.getElementById("torchBtnQR").innerText = "Flash Off";
+            document.getElementById("zoomBtnQR").innerText = "Zoom 1x";
         }
-    };
+    }
 
-    // --- QR Copy & Export ---
-    document.getElementById("copyQR").onclick = () => {
-        const val = document.getElementById("qrField").value;
-        if(!val) return alert("Kuch scan nahi kiya!");
-        navigator.clipboard.writeText(val);
-        alert("QR Data copied!");
-    };
+    document.getElementById("stopQR").onclick = () => stopQRScanner();
+    document.getElementById("torchBtnQR").onclick = (e) => { e.stopPropagation(); toggleFlash(qrScanner, "torchBtnQR"); };
+    document.getElementById("zoomBtnQR").onclick = (e) => { e.stopPropagation(); toggleZoom(qrScanner, "zoomBtnQR"); };
 
-    document.getElementById("exportQR").onclick = () => {
-        if (qrDataList.length === 0) return alert("QR Data nahi hai!");
-        let csv = "QR_Data,DateTime\n";
-        qrDataList.forEach(e => { csv += `"${e.data}","${e.time}"\n`; });
-        const blob = new Blob([csv], { type: "text/csv" });
-        const a = document.createElement("a");
-        a.href = URL.createObjectURL(blob);
-        a.download = "SagarQR_Data.csv";
-        a.click();
-    };
-
-    // --- Submit Logic (Sync Status Logic) ---
+    // --- Baki ki Logic (Submit, Sync, Table) ---
     document.getElementById("submitBtn").onclick = async () => {
         const entry = {
             module: document.getElementById("barcode").value,
@@ -165,84 +175,4 @@ document.getElementById("stopScan").onclick = async () => {
         document.getElementById("remark").value = "";
     };
 
-    async function sendToGoogleSheet(itemsArray) {
-        if (itemsArray.length === 0) return false;
-        const payload = { 
-            entries: itemsArray.map(item => ({
-                module: item.module, image: item.image, remark: item.remark,
-                date: item.datetime.split(',')[0], datetime: item.datetime
-            }))
-        };
-        try {
-            await fetch(WEBAPP_URL, {
-                method: "POST", mode: "no-cors",
-                headers: { "Content-Type": "text/plain" },
-                body: JSON.stringify(payload)
-            });
-            return true;
-        } catch (e) { return false; }
-    }
-
-    document.getElementById("syncBtn").onclick = async () => {
-        const unsynced = barcodeData.filter(d => !d.synced);
-        if (unsynced.length === 0) return alert("Saara data pehle se update hai!");
-        
-        const btn = document.getElementById("syncBtn");
-        btn.innerText = "Updating...";
-        btn.disabled = true;
-
-        const ok = await sendToGoogleSheet(unsynced);
-        if (ok) {
-            barcodeData.forEach(d => { if (!d.synced) d.synced = true; });
-            localStorage.setItem("barcodeData", JSON.stringify(barcodeData));
-            updateTable();
-            alert("Sheet updated successfully!");
-        } else { 
-            alert("Sync failed!"); 
-        }
-        btn.innerText = "Update Google Sheet";
-        btn.disabled = false;
-    };
-
-    document.getElementById("copyBtn").onclick = () => {
-        const table = document.getElementById("table");
-        const range = document.createRange();
-        range.selectNode(table);
-        window.getSelection().removeAllRanges();
-        window.getSelection().addRange(range);
-        document.execCommand("copy");
-        alert("Table copied!");
-    };
-
-    document.getElementById("exportBtn").onclick = () => {
-        if (barcodeData.length === 0) return alert("Data nahi hai!");
-        let csv = "Serial,Photo,Remark,DateTime\n";
-        barcodeData.forEach(e => { csv += `"${e.module}","${e.image}","${e.remark}","${e.datetime}"\n`; });
-        const blob = new Blob([csv], { type: "text/csv" });
-        const a = document.createElement("a");
-        a.href = URL.createObjectURL(blob);
-        a.download = "SagarBarcode_Data.csv";
-        a.click();
-    };
-
-    function updateTable() {
-        const table = document.getElementById("table");
-        table.innerHTML = "<tr><th>Serial</th><th>Photo</th><th>Remark</th><th>Status</th><th>Del</th></tr>";
-        barcodeData.forEach((e, i) => {
-            const row = table.insertRow(-1);
-            row.innerHTML = `<td>${e.module}</td><td>${e.image}</td><td>${e.remark}</td><td style="color:${e.synced ? 'green' : 'red'}; font-weight:bold;">${e.synced ? 'Synced' : 'Pending'}</td><td><button onclick="deleteRow(${i})" style="background:red; color:white; width:auto; padding:5px 10px;">X</button></td>`;
-        });
-        document.getElementById("totalCount").innerText = barcodeData.length;
-    }
-
-    window.deleteRow = (i) => {
-        if (confirm("Delete?")) {
-            barcodeData.splice(i, 1);
-            localStorage.setItem("barcodeData", JSON.stringify(barcodeData));
-            updateTable();
-        }
-    };
-
-    updateTable();
-});
-                    
+    async function send
