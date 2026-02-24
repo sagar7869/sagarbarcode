@@ -1,4 +1,4 @@
-/* --- Original UI Design (All Colors Restored) --- */
+/* --- 1. Aapka Pura Purana UI (No Changes Here) --- */
 body {
   font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
   margin: 0; padding: 0;
@@ -24,12 +24,13 @@ nav { display: flex; justify-content: center; margin: 20px 0; gap: 10px; }
   padding: 15px; background: white; border-radius: 20px;
 }
 
-/* --- Full Screen Camera View --- */
+/* --- 2. Camera View (Sirf Scan ke waqt badlega) --- */
 .cameraPreview {
   display: none; width: 100%; height: 320px; background: #000;
   border-radius: 25px; overflow: hidden; margin: 0 auto 20px auto; position: relative;
 }
 
+/* Jab Start Scan dabaein - Full Screen Professional Mode */
 .cameraPreview.full-view {
   display: block !important; position: fixed !important;
   top: 0 !important; left: 0 !important;
@@ -41,12 +42,50 @@ nav { display: flex; justify-content: center; margin: 20px 0; gap: 10px; }
   width: 100% !important; height: 100% !important; object-fit: cover !important;
 }
 
-/* --- FLASH & ZOOM BUTTONS DESIGN (NEW ADDED) --- */
+/* Flash & Zoom Buttons (Transparent UI) */
 .cam-controls {
-  position: absolute;
-  bottom: 120px; /* Stop button ke upar dikhega */
-  width: 100%;
-  display: flex;
-  justify-content: space-around;
-  z-index
-  
+  position: absolute; bottom: 120px; width: 100%;
+  display: flex; justify-content: space-around; z-index: 10001;
+}
+
+.ctrl-btn {
+  background: rgba(0, 0, 0, 0.5) !important; border: 1px solid rgba(255, 255, 255, 0.4) !important;
+  color: white !important; padding: 10px 15px !important; border-radius: 50px !important;
+  width: auto !important; font-size: 14px !important; backdrop-filter: blur(5px);
+}
+
+/* Scanning Frame Brackets */
+.cameraPreview.full-view::before {
+  content: ""; position: absolute; top: 50%; left: 50%;
+  transform: translate(-50%, -50%); width: 75%; height: 25%;
+  border: 4px solid #fff; border-radius: 15px;
+  box-shadow: 0 0 0 2000px rgba(0,0,0,0.5); z-index: 10000;
+}
+
+/* Stop Button jab camera full screen ho */
+#stopScan.floating-btn, #stopQR.floating-btn {
+  position: fixed !important; bottom: 40px !important;
+  left: 50% !important; transform: translateX(-50%) !important;
+  z-index: 10002 !important; width: 85% !important;
+  background: #d32f2f !important; border-radius: 50px !important; color: white !important;
+}
+
+/* --- 3. Aapke Original Colorful Buttons (Restore) --- */
+button { width: 100%; padding: 12px; margin: 5px 0; border-radius: 12px; border: none; font-weight: bold; cursor: pointer; }
+
+#startScan, #startQR, #syncBtn { background: #ff9800; color: white; } 
+#stopScan, #stopQR { background: #546e7a; color: white; } 
+#copyBtn, #copyQR { background: #2196f3; color: white; } 
+#exportBtn, #exportQR { background: #673ab7; color: white; } 
+#submitBtn { background: #4caf50; color: white; }
+
+/* --- 4. Table UI (Restore) --- */
+.table-wrapper { overflow-x: auto; margin-top: 20px; padding: 10px; }
+#table { width: 100%; border-collapse: collapse; background: white; }
+#table th { 
+  background: #f8f9fa; padding: 12px 5px; border-bottom: 2px solid #eee; 
+  font-size: 13px; color: #666; font-weight: bold; text-align: center;
+}
+#table td { padding: 10px 5px; border-bottom: 1px solid #f1f1f1; font-size: 13px; }
+
+input, textarea { width: 100%; padding: 12px; margin: 8px 0; border: 1px solid #ddd; border-radius: 10px; box-sizing: border-box; }
