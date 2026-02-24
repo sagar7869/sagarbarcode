@@ -1,11 +1,11 @@
-/* --- Original UI (Image 1000083623.png) --- */
+/* --- Aapka Original UI (Image 1000083623.png) --- */
 body {
   font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
   margin: 0; padding: 0;
   background-color: #f4f7f9; color: #333; text-align: center;
 }
 
-header, footer {
+header {
   background: linear-gradient(135deg, #ff5722, #e64a19);
   color: white; padding: 15px 0; box-shadow: 0 2px 8px rgba(0,0,0,0.2);
 }
@@ -24,13 +24,12 @@ nav { display: flex; justify-content: center; margin: 20px 0; gap: 10px; }
   padding: 15px; background: white; border-radius: 20px;
 }
 
-/* ---------- FULL SCREEN CAMERA (UPGRADED) ---------- */
+/* --- Camera Full Screen Fix --- */
 .cameraPreview {
   display: none; width: 100%; height: 320px; background: #000;
   border-radius: 25px; overflow: hidden; margin: 0 auto 20px auto; position: relative;
 }
 
-/* Scan dabane par ye class lagegi */
 .cameraPreview.full-view {
   display: block !important; position: fixed !important;
   top: 0 !important; left: 0 !important;
@@ -42,41 +41,29 @@ nav { display: flex; justify-content: center; margin: 20px 0; gap: 10px; }
   width: 100% !important; height: 100% !important; object-fit: cover !important;
 }
 
-/* Library ke extra boxes hide karne ke liye */
+/* Library ka extra white box hatane ke liye */
 #reader__scan_region > div { display: none !important; }
 
-/* Floating Stop Button (Camera ke upar) */
 #stopScan.floating-btn {
   position: fixed !important; bottom: 40px !important;
   left: 50% !important; transform: translateX(-50%) !important;
   z-index: 10001 !important; width: 85% !important;
-  background: #d32f2f !important; padding: 15px !important;
-  border-radius: 50px !important; color: white !important;
+  background: #d32f2f !important; border-radius: 50px !important; color: white !important;
 }
 
-/* Brackets for Scanning Area */
-.cameraPreview.full-view::before {
-  content: ""; position: absolute; top: 50%; left: 50%;
-  transform: translate(-50%, -50%); width: 80%; height: 30%;
-  border: 4px solid #fff; border-radius: 15px; z-index: 10000;
-  box-shadow: 0 0 0 2000px rgba(0,0,0,0.4);
-}
-
-/* Laser Line */
-.cameraPreview.full-view::after {
-  content: ""; position: absolute; top: 50%; left: 10%; width: 80%; height: 3px;
-  background: #00ff00; box-shadow: 0 0 15px 5px rgba(0, 255, 0, 0.7);
-  animation: scanLine 2s infinite ease-in-out; z-index: 10002;
-}
-@keyframes scanLine { 0%, 100% { top: 35%; } 50% { top: 65%; } }
-
-/* --- Buttons (Original Colors) --- */
+/* --- Buttons & Table (Original Design Restored) --- */
 button { width: 100%; padding: 12px; margin: 5px 0; border-radius: 12px; border: none; font-weight: bold; cursor: pointer; }
-#startScan { background: #ff9800; color: white; }
-#stopScan { background: #546e7a; color: white; }
-#copyBtn { background: #2196f3; color: white; }
-#exportBtn { background: #673ab7; color: white; }
-#syncBtn { background: #ff5722; color: white; }
-#submitBtn { background: #4caf50; color: white; }
+
+#startScan { background: #ff9800; color: white; } /* Orange */
+#stopScan { background: #546e7a; color: white; } /* Grey-Blue */
+#copyBtn { background: #2196f3; color: white; } /* Blue */
+#exportBtn { background: #673ab7; color: white; } /* Purple */
+#syncBtn { background: #ff5722; color: white; } /* Orange-Red */
+#submitBtn { background: #4caf50; color: white; } /* Green */
+
+.table-wrapper { overflow-x: auto; margin-top: 20px; padding: 10px; }
+#table { width: 100%; border-collapse: collapse; background: white; }
+#table th { background: #f8f9fa; padding: 12px 5px; border-bottom: 2px solid #eee; font-size: 13px; color: #666; font-weight: bold; }
+#table td { padding: 10px 5px; border-bottom: 1px solid #f1f1f1; font-size: 13px; }
 
 input, textarea { width: 100%; padding: 12px; margin: 8px 0; border: 1px solid #ddd; border-radius: 10px; box-sizing: border-box; }
