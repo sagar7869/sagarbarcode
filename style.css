@@ -66,43 +66,62 @@ nav {
 }
 
 /* ---------- PROFESSIONAL CAMERA UI (FIXED FOR FULL VIEW) ---------- */
+/* ---------- FULL SCREEN CAMERA UI ---------- */
 .cameraPreview {
   display: none;
-  width: 320px;
-  height: 320px;
   background: #000;
-  border-radius: 25px;
-  overflow: hidden;
-  margin: 0 auto 20px auto;
-  position: relative;
-  border: 5px solid #333;
   transition: all 0.3s ease;
 }
 
-/* Isse video khinch kar poore box mein fit ho jayegi */
-.cameraPreview video {
-  width: 100% !important;
-  height: 100% !important;
-  object-fit: fill !important; 
+/* Jab Start Scan par click ho, ye class apply hogi */
+.cameraPreview.full-view {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw !important;
+  height: 100vh !important;
+  z-index: 999;
+  border: none;
+  border-radius: 0;
+  margin: 0;
 }
 
-/* Laser Scan Line Animation */
+/* Video pichkegi nahi, ekdum saaf dikhegi */
+.cameraPreview.full-view video {
+  width: 100% !important;
+  height: 100% !important;
+  object-fit: cover !important; 
+}
+
+/* Stop Scan button ko camera ke upar dikhane ke liye */
+#stopScan.floating-btn {
+  position: fixed;
+  bottom: 50px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 1000;
+  width: 80%; /* Phone par asani se dabane ke liye bada button */
+  background: rgba(211, 47, 47, 0.9);
+  box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+}
+
+/* Laser Scan Line (Ab ye poori screen par ghumegi) */
 .cameraPreview::after {
   content: "";
   position: absolute;
-  top: 15%;
-  left: 10%;
-  width: 80%;
+  top: 50%;
+  left: 5%;
+  width: 90%;
   height: 3px;
   background: #00ff00;
   box-shadow: 0 0 15px 5px rgba(0, 255, 0, 0.7);
-  animation: scanMove 1.8s infinite ease-in-out;
-  z-index: 10;
+  animation: scanMove 2s infinite ease-in-out;
+  z-index: 1010;
 }
 
 @keyframes scanMove {
-  0%, 100% { top: 20%; opacity: 0.8; }
-  50% { top: 80%; opacity: 1; }
+  0%, 100% { top: 30%; opacity: 0.5; }
+  50% { top: 70%; opacity: 1; }
 }
 
 /* Corner Brackets */
