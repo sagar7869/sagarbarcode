@@ -11,23 +11,18 @@ document.addEventListener("DOMContentLoaded", () => {
     let isFlashOn = false;
     let currentZoom = 1;
 
-    // --- Tab Switching Fix ---
+    // --- Tab Switching ---
     const tabs = document.querySelectorAll(".tabBtn");
     const sections = document.querySelectorAll(".tabSection");
     
     tabs.forEach(tab => {
         tab.onclick = async () => {
             const target = tab.getAttribute("data-tab");
-            
-            // Sab section hide karo
             sections.forEach(s => s.style.display = "none");
             tabs.forEach(t => t.classList.remove("activeTab"));
-            
-            // Target section dikhao
             document.getElementById(target).style.display = "block";
             tab.classList.add("activeTab");
             
-            // Scanner band karo agar chal raha ho
             if (barcodeScanner && barcodeScanner.isScanning) await stopBarcodeScanner();
             if (qrScanner && qrScanner.isScanning) await stopQRScanner();
         };
@@ -44,7 +39,7 @@ document.addEventListener("DOMContentLoaded", () => {
         } catch (e) { console.log(e); }
     }
 
-    // --- Start Scan Logic (Fix) ---
+    // --- Barcode Section ---
     document.getElementById("startScan").onclick = () => {
         const readerElem = document.getElementById("reader");
         const stopBtn = document.getElementById("stopScan");
@@ -69,19 +64,18 @@ document.addEventListener("DOMContentLoaded", () => {
     };
 
     async function stopBarcodeScanner(code = null) {
-        if (barcodeScanner && barcodeScanner.isScanning) {
-            await barcodeScanner.stop();
-        }
+        if (barcodeScanner && barcodeScanner.isScanning) await barcodeScanner.stop();
         const readerElem = document.getElementById("reader");
         readerElem.classList.remove("full-view");
         document.getElementById("stopScan").classList.remove("floating-btn");
         readerElem.style.display = "none";
         document.body.style.overflow = "auto";
         
+        // Reset States
         isFlashOn = false;
         currentZoom = 1;
-        if(document.getElementById("torchBtn")) document.getElementById("torchBtn").innerText = "Flash Off";
-        if(document.getElementById("zoomBtn")) document.getElementById("zoomBtn").innerText = "Zoom 1x";
+        document.getElementById("torchBtn").innerText = "Flash Off";
+        document.getElementById("zoomBtn").innerText = "Zoom 1x";
 
         if (code) {
             document.getElementById("entryFields").style.display = "block";
@@ -93,7 +87,28 @@ document.addEventListener("DOMContentLoaded", () => {
 
     document.getElementById("stopScan").onclick = () => stopBarcodeScanner();
 
-    // --- QR Section Fix ---
+    // Barcode Flash/Zoom Logic
+    document.getElementById("torchBtn").onclick = async (e) => {
+        e.stopPropagation();
+        if (!barcodeScanner || !barcodeScanner.isScanning) return;
+        isFlashOn = !isFlashOn;
+        try {
+            await barcodeScanner.applyVideoConstraints({ advanced: [{ torch: isFlashOn }] });
+            document.getElementById("torchBtn").innerText = isFlashOn ? "Flash ON" : "Flash Off";
+        } catch (e) { alert("Flash not supported"); }
+    };
+
+    document.getElementById("zoomBtn").onclick = async (e) => {
+        e.stopPropagation();
+        if (!barcodeScanner || !barcodeScanner.isScanning) return;
+        currentZoom = (currentZoom === 1) ? 2 : 1;
+        try {
+            await barcodeScanner.applyVideoConstraints({ advanced: [{ zoom: currentZoom }] });
+            document.getElementById("zoomBtn").innerText = "Zoom " + currentZoom + "x";
+        } catch (e) { alert("Zoom not supported"); }
+    };
+
+    // --- QR Section ---
     document.getElementById("startQR").onclick = () => {
         const qrElem = document.getElementById("qr-reader");
         const stopBtnQR = document.getElementById("stopQR");
@@ -118,32 +133,38 @@ document.addEventListener("DOMContentLoaded", () => {
         qrElem.classList.remove("full-view");
         document.getElementById("stopQR").classList.remove("floating-btn");
         qrElem.style.display = "none";
+        
+        // QR Reset States
+        isFlashOn = false;
+        currentZoom = 1;
+        document.getElementById("torchBtnQR").innerText = "Flash Off";
+        document.getElementById("zoomBtnQR").innerText = "Zoom 1x";
     }
 
     document.getElementById("stopQR").onclick = () => stopQRScanner();
 
-    // --- Flash & Zoom Logic ---
-    document.getElementById("torchBtn").onclick = async (e) => {
+    // QR Flash/Zoom Logic
+    document.getElementById("torchBtnQR").onclick = async (e) => {
         e.stopPropagation();
-        if (!barcodeScanner || !barcodeScanner.isScanning) return;
+        if (!qrScanner || !qrScanner.isScanning) return;
         isFlashOn = !isFlashOn;
         try {
-            await barcodeScanner.applyVideoConstraints({ advanced: [{ torch: isFlashOn }] });
-            document.getElementById("torchBtn").innerText = isFlashOn ? "Flash ON" : "Flash Off";
+            await qrScanner.applyVideoConstraints({ advanced: [{ torch: isFlashOn }] });
+            document.getElementById("torchBtnQR").innerText = isFlashOn ? "Flash ON" : "Flash Off";
         } catch (e) { alert("Flash not supported"); }
     };
 
-    document.getElementById("zoomBtn").onclick = async (e) => {
+    document.getElementById("zoomBtnQR").onclick = async (e) => {
         e.stopPropagation();
-        if (!barcodeScanner || !barcodeScanner.isScanning) return;
+        if (!qrScanner || !qrScanner.isScanning) return;
         currentZoom = (currentZoom === 1) ? 2 : 1;
         try {
-            await barcodeScanner.applyVideoConstraints({ advanced: [{ zoom: currentZoom }] });
-            document.getElementById("zoomBtn").innerText = "Zoom " + currentZoom + "x";
+            await qrScanner.applyVideoConstraints({ advanced: [{ zoom: currentZoom }] });
+            document.getElementById("zoomBtnQR").innerText = "Zoom " + currentZoom + "x";
         } catch (e) { alert("Zoom not supported"); }
     };
 
-    // --- Table & Submit Logic (Restore) ---
+    // --- Baki ki Logic ---
     function updateTable() {
         const table = document.getElementById("table");
         table.innerHTML = "<tr><th>Serial</th><th>Photo</th><th>Remark</th><th>Status</th><th>Del</th></tr>";
