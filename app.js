@@ -38,22 +38,23 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     // --- Barcode Section Logic (HIGH SPEED OPTIMIZED) ---
-    document.getElementById("startScan").onclick = () => {
+    
+    // --- Start Scan Logic ---
+document.getElementById("startScan").onclick = () => {
     const readerElem = document.getElementById("reader");
     const stopBtn = document.getElementById("stopScan");
     
+    document.body.style.overflow = "hidden"; // Page scroll rokein
     readerElem.style.display = "block";
-    readerElem.classList.add("full-view"); // Full screen class add karein
-    stopBtn.classList.add("floating-btn"); // Button ko upar layein
+    readerElem.classList.add("full-view");
+    stopBtn.classList.add("floating-btn");
 
     if (!barcodeScanner) barcodeScanner = new Html5Qrcode("reader");
     
     const barcodeConfig = { 
-        fps: 25, 
-        // qrbox ko wide rakhein taaki aapka lamba barcode fit ho jaye
-        qrbox: { width: 350, height: 150 }, 
-        aspectRatio: 1.0,
-        formatsToSupport: [ Html5QrcodeSupportedFormats.CODE_128 ] // Direct format target
+        fps: 30, 
+        qrbox: { width: 350, height: 150 }, // Bada scan box config
+        aspectRatio: 1.0
     };
 
     barcodeScanner.start({ facingMode: "environment" }, barcodeConfig, (code) => {
@@ -61,8 +62,9 @@ document.addEventListener("DOMContentLoaded", () => {
         isProcessing = true;
         playBeep();
         
-        // Scan hote hi full view band karein
         barcodeScanner.stop().then(() => {
+            // Scan hote hi sab reset karein
+            document.body.style.overflow = "auto";
             readerElem.classList.remove("full-view");
             stopBtn.classList.remove("floating-btn");
             readerElem.style.display = "none";
@@ -75,14 +77,24 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     });
 };
-    
 
     document.getElementById("stopScan").onclick = async () => {
-        if (barcodeScanner && barcodeScanner.isScanning) {
+    const readerElem = document.getElementById("reader");
+    const stopBtn = document.getElementById("stopScan");
+
+    if (barcodeScanner && barcodeScanner.isScanning) {
+        try {
             await barcodeScanner.stop();
-            document.getElementById("reader").style.display = "none";
+            // Important: Camera band hone par full-view hatana zaruri hai
+            readerElem.classList.remove("full-view");
+            stopBtn.classList.remove("floating-btn");
+            readerElem.style.display = "none";
+            document.body.style.overflow = "auto";
+        } catch (err) {
+            console.error("Stop error:", err);
         }
-    };
+    }
+};
 
     // --- QR Section Logic (Optimized Internal) ---
     document.getElementById("startQR").onclick = () => {
