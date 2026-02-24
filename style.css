@@ -1,11 +1,11 @@
-/* --- Original UI (Image 1000083623.png jaisa) --- */
+/* --- Original UI (Image 1000083623.png) --- */
 body {
   font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
   margin: 0; padding: 0;
   background-color: #f4f7f9; color: #333; text-align: center;
 }
 
-header {
+header, footer {
   background: linear-gradient(135deg, #ff5722, #e64a19);
   color: white; padding: 15px 0; box-shadow: 0 2px 8px rgba(0,0,0,0.2);
 }
@@ -24,12 +24,13 @@ nav { display: flex; justify-content: center; margin: 20px 0; gap: 10px; }
   padding: 15px; background: white; border-radius: 20px;
 }
 
-/* --- Camera UI (Full Screen logic) --- */
+/* ---------- FULL SCREEN CAMERA (UPGRADED) ---------- */
 .cameraPreview {
   display: none; width: 100%; height: 320px; background: #000;
   border-radius: 25px; overflow: hidden; margin: 0 auto 20px auto; position: relative;
 }
 
+/* Scan dabane par ye class lagegi */
 .cameraPreview.full-view {
   display: block !important; position: fixed !important;
   top: 0 !important; left: 0 !important;
@@ -41,10 +42,10 @@ nav { display: flex; justify-content: center; margin: 20px 0; gap: 10px; }
   width: 100% !important; height: 100% !important; object-fit: cover !important;
 }
 
-/* Library ke extra white boxes ko hatane ke liye */
+/* Library ke extra boxes hide karne ke liye */
 #reader__scan_region > div { display: none !important; }
 
-/* Floating Stop Button */
+/* Floating Stop Button (Camera ke upar) */
 #stopScan.floating-btn {
   position: fixed !important; bottom: 40px !important;
   left: 50% !important; transform: translateX(-50%) !important;
@@ -53,7 +54,23 @@ nav { display: flex; justify-content: center; margin: 20px 0; gap: 10px; }
   border-radius: 50px !important; color: white !important;
 }
 
-/* Original Colorful Buttons */
+/* Brackets for Scanning Area */
+.cameraPreview.full-view::before {
+  content: ""; position: absolute; top: 50%; left: 50%;
+  transform: translate(-50%, -50%); width: 80%; height: 30%;
+  border: 4px solid #fff; border-radius: 15px; z-index: 10000;
+  box-shadow: 0 0 0 2000px rgba(0,0,0,0.4);
+}
+
+/* Laser Line */
+.cameraPreview.full-view::after {
+  content: ""; position: absolute; top: 50%; left: 10%; width: 80%; height: 3px;
+  background: #00ff00; box-shadow: 0 0 15px 5px rgba(0, 255, 0, 0.7);
+  animation: scanLine 2s infinite ease-in-out; z-index: 10002;
+}
+@keyframes scanLine { 0%, 100% { top: 35%; } 50% { top: 65%; } }
+
+/* --- Buttons (Original Colors) --- */
 button { width: 100%; padding: 12px; margin: 5px 0; border-radius: 12px; border: none; font-weight: bold; cursor: pointer; }
 #startScan { background: #ff9800; color: white; }
 #stopScan { background: #546e7a; color: white; }
@@ -62,4 +79,4 @@ button { width: 100%; padding: 12px; margin: 5px 0; border-radius: 12px; border:
 #syncBtn { background: #ff5722; color: white; }
 #submitBtn { background: #4caf50; color: white; }
 
-input, textarea { width: 100%; padding: 12px; margin: 8px 0; border: 1px solid #ddd; border-radius: 10px; }
+input, textarea { width: 100%; padding: 12px; margin: 8px 0; border: 1px solid #ddd; border-radius: 10px; box-sizing: border-box; }
