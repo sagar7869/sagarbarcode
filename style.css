@@ -1,11 +1,11 @@
-/* --- Original Home Screen UI --- */
+/* --- Original UI (Image 1000083623.png jaisa) --- */
 body {
   font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
   margin: 0; padding: 0;
   background-color: #f4f7f9; color: #333; text-align: center;
 }
 
-header, footer {
+header {
   background: linear-gradient(135deg, #ff5722, #e64a19);
   color: white; padding: 15px 0; box-shadow: 0 2px 8px rgba(0,0,0,0.2);
 }
@@ -24,7 +24,7 @@ nav { display: flex; justify-content: center; margin: 20px 0; gap: 10px; }
   padding: 15px; background: white; border-radius: 20px;
 }
 
-/* ---------- FULL SCREEN CAMERA FIX (NO INTERNAL BOXES) ---------- */
+/* --- Camera UI (Full Screen logic) --- */
 .cameraPreview {
   display: none; width: 100%; height: 320px; background: #000;
   border-radius: 25px; overflow: hidden; margin: 0 auto 20px auto; position: relative;
@@ -37,51 +37,29 @@ nav { display: flex; justify-content: center; margin: 20px 0; gap: 10px; }
   z-index: 9999 !important; border: none !important; border-radius: 0 !important;
 }
 
-/* IMPORTANT: Video ko full view pe stretch karne ke liye */
 .cameraPreview video {
   width: 100% !important; height: 100% !important; object-fit: cover !important;
 }
 
-/* --- LIBRARY KE INTERNAL OVERLAY HATANE KE LIYE --- */
-/* Ye library ke us white box aur border ko hatayega jo aapko dikh raha hai */
-#reader__scan_region, #qr-reader__scan_region {
-  background: transparent !important;
-}
-
-#reader__scan_region > div, #qr-reader__scan_region > div {
-  display: none !important; /* Internal overlay hidden */
-}
+/* Library ke extra white boxes ko hatane ke liye */
+#reader__scan_region > div { display: none !important; }
 
 /* Floating Stop Button */
-#stopScan.floating-btn, #stopQR.floating-btn {
+#stopScan.floating-btn {
   position: fixed !important; bottom: 40px !important;
   left: 50% !important; transform: translateX(-50%) !important;
   z-index: 10001 !important; width: 85% !important;
   background: #d32f2f !important; padding: 15px !important;
   border-radius: 50px !important; color: white !important;
-  box-shadow: 0 4px 20px rgba(0,0,0,0.5) !important;
 }
 
-/* Scan Line Animation */
-.cameraPreview.full-view::after {
-  content: ""; position: absolute; top: 50%; left: 0;
-  width: 100%; height: 3px; background: #00ff00;
-  box-shadow: 0 0 15px 5px rgba(0, 255, 0, 0.7);
-  animation: scanMove 2s infinite ease-in-out; z-index: 10002;
-}
-
-@keyframes scanMove { 0%, 100% { top: 25%; } 50% { top: 75%; } }
-
-/* Corner Brackets (Isse aapka custom scan area bada dikhega) */
-.cameraPreview.full-view::before {
-  content: ""; position: absolute; top: 50%; left: 50%;
-  transform: translate(-50%, -50%);
-  width: 85%; height: 30%; /* Barcode ke liye bada area */
-  border: 4px solid #fff; border-radius: 15px;
-  z-index: 10000; box-shadow: 0 0 0 2000px rgba(0,0,0,0.3);
-}
-
-/* Baaki Buttons & Inputs */
+/* Original Colorful Buttons */
 button { width: 100%; padding: 12px; margin: 5px 0; border-radius: 12px; border: none; font-weight: bold; cursor: pointer; }
-#startScan, #startQR { background: #ff9800; color: white; }
-input, textarea { width: 100%; padding: 12px; margin: 8px 0; border: 1px solid #ddd; border-radius: 10px; box-sizing: border-box; }
+#startScan { background: #ff9800; color: white; }
+#stopScan { background: #546e7a; color: white; }
+#copyBtn { background: #2196f3; color: white; }
+#exportBtn { background: #673ab7; color: white; }
+#syncBtn { background: #ff5722; color: white; }
+#submitBtn { background: #4caf50; color: white; }
+
+input, textarea { width: 100%; padding: 12px; margin: 8px 0; border: 1px solid #ddd; border-radius: 10px; }
