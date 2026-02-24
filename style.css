@@ -65,47 +65,56 @@ nav {
   background: #fff;
 }
 
-/* ---------- PROFESSIONAL CAMERA UI (FIXED FOR FULL VIEW) ---------- */
-/* ---------- FULL SCREEN CAMERA UI ---------- */
+/* ---------- FULL SCREEN CAMERA UI (UPDATED) ---------- */
 .cameraPreview {
   display: none;
+  width: 100%;
+  max-width: 320px;
+  height: 320px;
   background: #000;
-  transition: all 0.3s ease;
+  border-radius: 25px;
+  overflow: hidden;
+  margin: 0 auto 20px auto;
+  position: relative;
+  border: 5px solid #333;
 }
 
-/* Jab Start Scan par click ho, ye class apply hogi */
+/* Jab Start Scan dabaein, tab ye full screen hoga */
 .cameraPreview.full-view {
-  position: fixed;
-  top: 0;
-  left: 0;
+  display: block !important;
+  position: fixed !important;
+  top: 0 !important;
+  left: 0 !important;
   width: 100vw !important;
   height: 100vh !important;
-  z-index: 999;
-  border: none;
-  border-radius: 0;
-  margin: 0;
+  z-index: 9999 !important;
+  border: none !important;
+  border-radius: 0 !important;
+  margin: 0 !important;
+  max-width: none !important;
 }
 
-/* Video pichkegi nahi, ekdum saaf dikhegi */
-.cameraPreview.full-view video {
+.cameraPreview video {
   width: 100% !important;
   height: 100% !important;
-  object-fit: cover !important; 
+  object-fit: cover !important; /* Video ko natural rakhne ke liye */
 }
 
-/* Stop Scan button ko camera ke upar dikhane ke liye */
-#stopScan.floating-btn {
-  position: fixed;
-  bottom: 50px;
-  left: 50%;
-  transform: translateX(-50%);
-  z-index: 1000;
-  width: 80%; /* Phone par asani se dabane ke liye bada button */
-  background: rgba(211, 47, 47, 0.9);
-  box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+/* Floating Stop Button (Camera ke upar) */
+#stopScan.floating-btn, #stopQR.floating-btn {
+  position: fixed !important;
+  bottom: 40px !important;
+  left: 50% !important;
+  transform: translateX(-50%) !important;
+  z-index: 10000 !important;
+  width: 80% !important;
+  background: #d32f2f !important;
+  padding: 15px !important;
+  border-radius: 50px !important;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.4) !important;
 }
 
-/* Laser Scan Line (Ab ye poori screen par ghumegi) */
+/* Laser Scan Line */
 .cameraPreview::after {
   content: "";
   position: absolute;
@@ -120,12 +129,12 @@ nav {
 }
 
 @keyframes scanMove {
-  0%, 100% { top: 30%; opacity: 0.5; }
-  50% { top: 70%; opacity: 1; }
+  0%, 100% { top: 30%; }
+  50% { top: 70%; }
 }
 
-/* Corner Brackets */
-.cameraPreview::before {
+/* Corner Brackets (Sirf tab dikhenge jab full screen na ho) */
+.cameraPreview:not(.full-view)::before {
   content: "";
   position: absolute;
   top: 50%;
