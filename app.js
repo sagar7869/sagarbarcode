@@ -44,39 +44,38 @@ document.getElementById("startScan").onclick = () => {
     const readerElem = document.getElementById("reader");
     const stopBtn = document.getElementById("stopScan");
     
-    document.body.style.overflow = "hidden"; // Page scroll rokein
     readerElem.style.display = "block";
     readerElem.classList.add("full-view");
     stopBtn.classList.add("floating-btn");
+    document.body.style.overflow = "hidden";
 
     if (!barcodeScanner) barcodeScanner = new Html5Qrcode("reader");
     
+    // Yahan qrbox ko NULL kar diya hai taaki white box na bane
     const barcodeConfig = { 
         fps: 30, 
-        qrbox: { width: 350, height: 150 }, // Bada scan box config
-        aspectRatio: 1.0
+        qrbox: null, // Isse white box gayab ho jayega
+        aspectRatio: 1.777778 // 16:9 widescreen view
     };
 
-    barcodeScanner.start({ facingMode: "environment" }, barcodeConfig, (code) => {
-        if (isProcessing) return;
-        isProcessing = true;
-        playBeep();
-        
-        barcodeScanner.stop().then(() => {
-            // Scan hote hi sab reset karein
-            document.body.style.overflow = "auto";
-            readerElem.classList.remove("full-view");
-            stopBtn.classList.remove("floating-btn");
-            readerElem.style.display = "none";
-            
-            document.getElementById("entryFields").style.display = "block";
-            document.getElementById("barcode").value = code;
-            document.getElementById("datetime").value = new Date().toLocaleString('en-GB');
-            document.getElementById("photo").focus();
-            isProcessing = false;
-        });
-    });
+    barcodeScanner.start(
+        { facingMode: "environment" }, 
+        barcodeConfig, 
+        (code) => {
+            if (isProcessing) return;
+            isProcessing = true;
+            playBeep();
+            barcodeScanner.stop().then(() => {
+                resetUI();
+                document.getElementById("entryFields").style.display = "block";
+                document.getElementById("barcode").value = code;
+                document.getElementById("datetime").value = new Date().toLocaleString('en-GB');
+                isProcessing = false;
+            });
+        }
+    );
 };
+    
 
     document.getElementById("stopScan").onclick = async () => {
     const readerElem = document.getElementById("reader");
