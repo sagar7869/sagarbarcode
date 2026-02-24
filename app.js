@@ -45,17 +45,21 @@ document.addEventListener("DOMContentLoaded", () => {
         if (!barcodeScanner) barcodeScanner = new Html5Qrcode("reader");
         
         // Configuration check karein
-        const barcodeConfig = {
-            fps: 10, // FPS 10-15 ke beech rakhein
-            qrbox: 250, // 'null' ki jagah '250' karein
-            aspectRatio: 1.777,
-            formatsToSupport: [
-                Html5QrcodeSupportedFormats.CODE_128,
-                Html5QrcodeSupportedFormats.CODE_39,
-                Html5QrcodeSupportedFormats.EAN_13,
-                Html5QrcodeSupportedFormats.EAN_8
-            ]
-        };
+        const barcodeConfig = { 
+    fps: 20, 
+    qrbox: { width: 300, height: 150 }, // Box size optimized for wide barcodes
+    aspectRatio: 1.0,
+    experimentalFeatures: {
+        useBarCodeDetectorIfSupported: true 
+    },
+    // Sirf wahi formats scan karein jo aapke paas hain (Speed badhane ke liye)
+    formatsToSupport: [ 
+        Html5QrcodeSupportedFormats.CODE_128,
+        Html5QrcodeSupportedFormats.EAN_13,
+        Html5QrcodeSupportedFormats.CODE_39 
+    ]
+};
+        
         // ... rest of the code
         
         
@@ -108,10 +112,12 @@ document.getElementById("stopScan").onclick = async () => {
             fps: 25, 
             qrbox: 250,
             videoConstraints: {
-                facingMode: "environment",
-                width: { ideal: 1280 },
-                height: { ideal: 720 }
+    facingMode: "environment",
+    width: { ideal: 1280 }, 
+    height: { ideal: 720 },
+    focusMode: "continuous"
             }
+            
         }, (code) => {
             playBeep();
             document.getElementById("qrField").value = code;
