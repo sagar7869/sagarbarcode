@@ -44,56 +44,46 @@ document.getElementById("startScan").onclick = () => {
     const readerElem = document.getElementById("reader");
     const stopBtn = document.getElementById("stopScan");
     
+    // UI ko Full Screen mode mein dalo
     readerElem.style.display = "block";
     readerElem.classList.add("full-view");
     stopBtn.classList.add("floating-btn");
-    document.body.style.overflow = "hidden";
+    document.body.style.overflow = "hidden"; // Scroll band karo
 
     if (!barcodeScanner) barcodeScanner = new Html5Qrcode("reader");
     
-    // Yahan qrbox ko NULL kar diya hai taaki white box na bane
-    const barcodeConfig = { 
-        fps: 30, 
-        qrbox: null, // Isse white box gayab ho jayega
-        aspectRatio: 1.777778 // 16:9 widescreen view
-    };
+    // High Speed Config
+    const config = { fps: 30, qrbox: null, aspectRatio: 1.0 };
 
-    barcodeScanner.start(
-        { facingMode: "environment" }, 
-        barcodeConfig, 
-        (code) => {
-            if (isProcessing) return;
-            isProcessing = true;
-            playBeep();
-            barcodeScanner.stop().then(() => {
-                resetUI();
-                document.getElementById("entryFields").style.display = "block";
-                document.getElementById("barcode").value = code;
-                document.getElementById("datetime").value = new Date().toLocaleString('en-GB');
-                isProcessing = false;
-            });
-        }
-    );
-};
-    
-
-    document.getElementById("stopScan").onclick = async () => {
-    const readerElem = document.getElementById("reader");
-    const stopBtn = document.getElementById("stopScan");
-
-    if (barcodeScanner && barcodeScanner.isScanning) {
-        try {
-            await barcodeScanner.stop();
-            // Important: Camera band hone par full-view hatana zaruri hai
+    barcodeScanner.start({ facingMode: "environment" }, config, (code) => {
+        if (isProcessing) return;
+        isProcessing = true;
+        playBeep();
+        barcodeScanner.stop().then(() => {
+            // UI ko wapas purana (Orange Home) mode mein dalo
             readerElem.classList.remove("full-view");
             stopBtn.classList.remove("floating-btn");
             readerElem.style.display = "none";
             document.body.style.overflow = "auto";
-        } catch (err) {
-            console.error("Stop error:", err);
-        }
+            
+            document.getElementById("entryFields").style.display = "block";
+            document.getElementById("barcode").value = code;
+            isProcessing = false;
+        });
+    });
+};
+
+// Stop button logic
+document.getElementById("stopScan").onclick = async () => {
+    if (barcodeScanner && barcodeScanner.isScanning) {
+        await barcodeScanner.stop();
+        document.getElementById("reader").classList.remove("full-view");
+        document.getElementById("stopScan").classList.remove("floating-btn");
+        document.getElementById("reader").style.display = "none";
+        document.body.style.overflow = "auto";
     }
 };
+    
 
     // --- QR Section Logic (Optimized Internal) ---
     document.getElementById("startQR").onclick = () => {
