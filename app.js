@@ -40,9 +40,10 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     // ==========================================
-    // 1. BARCODE SCANNER LOGIC (FIXED & FAST)
+    // 1. BARCODE SCANNER LOGIC (FIXED GHOST SCAN)
     // ==========================================
     document.getElementById("startScan").onclick = () => {
+        isProcessing = false; // Reset lock on every new start
         const readerElem = document.getElementById("reader");
         const stopBtn = document.getElementById("stopScan");
         
@@ -53,13 +54,13 @@ document.addEventListener("DOMContentLoaded", () => {
 
         if (!barcodeScanner) barcodeScanner = new Html5Qrcode("reader");
         
-        // Wahi configuration jo QR mein perfect chal rahi hai
+        // Barcode ke liye Rectangular box (Best for 1D Barcodes)
         const config = {
-            fps: 30,
+            fps: 20,
             qrbox: (viewfinderWidth, viewfinderHeight) => {
-                let minEdge = Math.min(viewfinderWidth, viewfinderHeight);
-                let size = Math.floor(minEdge * 0.75);
-                return { width: size, height: size };
+                let width = Math.floor(viewfinderWidth * 0.85);
+                let height = Math.floor(viewfinderHeight * 0.35);
+                return { width: width, height: height };
             },
             videoConstraints: {
                 facingMode: "environment",
@@ -74,15 +75,27 @@ document.addEventListener("DOMContentLoaded", () => {
             config, 
             (code) => {
                 if (isProcessing) return;
+                if (!code || code.trim() === "") return; // Ignore fake/empty scans
+                
                 isProcessing = true;
                 playBeep();
                 stopBarcodeScanner(code);
             }
-        ).catch(err => alert("Camera error: " + err));
+        ).catch(err => {
+            isProcessing = false;
+            alert("Camera error: " + err);
+        });
     };
 
     async function stopBarcodeScanner(code = null) {
-        if (barcodeScanner && barcodeScanner.isScanning) await barcodeScanner.stop();
+        try {
+            if (barcodeScanner && barcodeScanner.isScanning) {
+                await barcodeScanner.stop();
+            }
+        } catch (e) {
+            console.log(e);
+        }
+
         const readerElem = document.getElementById("reader");
         readerElem.classList.remove("full-view");
         document.getElementById("stopScan").classList.remove("floating-btn");
@@ -95,7 +108,7 @@ document.addEventListener("DOMContentLoaded", () => {
         document.getElementById("torchBtn").innerText = "Flash Off";
         document.getElementById("zoomBtn").innerText = "Zoom 1x";
 
-        if (code) {
+        if (code && code.trim() !== "") {
             document.getElementById("entryFields").style.display = "block";
             document.getElementById("barcode").value = code;
             document.getElementById("datetime").value = new Date().toLocaleString('en-GB');
@@ -139,7 +152,7 @@ document.addEventListener("DOMContentLoaded", () => {
         if (!qrScanner) qrScanner = new Html5Qrcode("qr-reader");
 
         const qrConfig = {
-            fps: 30,
+            fps: 20,
             qrbox: (viewfinderWidth, viewfinderHeight) => {
                 let minEdge = Math.min(viewfinderWidth, viewfinderHeight);
                 let qrboxSize = Math.floor(minEdge * 0.7);
@@ -157,6 +170,7 @@ document.addEventListener("DOMContentLoaded", () => {
             { facingMode: "environment" }, 
             qrConfig, 
             (code) => {
+                if (!code || code.trim() === "") return;
                 playBeep();
                 document.getElementById("qrField").value = code;
                 qrDataList.push({ data: code, time: new Date().toLocaleString('en-GB') });
@@ -168,13 +182,15 @@ document.addEventListener("DOMContentLoaded", () => {
     };
 
     async function stopQRScanner() {
-        if (qrScanner && qrScanner.isScanning) await qrScanner.stop();
+        try {
+            if (qrScanner && qrScanner.isScanning) await qrScanner.stop();
+        } catch(e) { console.log(e); }
+        
         const qrElem = document.getElementById("qr-reader");
         qrElem.classList.remove("full-view");
         document.getElementById("stopQR").classList.remove("floating-btn");
         qrElem.style.display = "none";
         
-        // QR Reset States
         isFlashOn = false;
         currentZoom = 1;
         document.getElementById("torchBtnQR").innerText = "Flash Off";
