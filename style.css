@@ -38,52 +38,66 @@ button { width: 100%; padding: 12px; margin: 5px 0; border-radius: 12px; border:
 #table td { padding: 10px 5px; border-bottom: 1px solid #f1f1f1; font-size: 13px; }
 input, textarea { width: 100%; padding: 12px; margin: 8px 0; border: 1px solid #ddd; border-radius: 10px; box-sizing: border-box; }
 
+
 /* ======================================================== */
-/* PREMIUM NATIVE SCANNER OVERLAY (Aapki Image Jaisa UI) */
+/* CAMERA PREVIEW (Peeche chalne wala asli camera)          */
+/* ======================================================== */
+#reader.full-view, #qr-reader.full-view {
+  display: block !important;
+  position: fixed !important;
+  top: 0 !important; left: 0 !important;
+  width: 100vw !important; height: 100vh !important;
+  z-index: 9000 !important; /* Overlay ke theek niche */
+  background: #000;
+}
+#reader video, #qr-reader video {
+  width: 100% !important; height: 100% !important; object-fit: cover !important;
+}
+
+
+/* ======================================================== */
+/* PREMIUM NATIVE SCANNER OVERLAY (Camera ke upar ka UI)    */
 /* ======================================================== */
 #scannerOverlay {
   position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
-  background: #000; z-index: 99999;
+  background: transparent; /* YAHAN GALTI THI, ab background transparent hai */
+  z-index: 99999;
   display: flex; flex-direction: column; align-items: center; justify-content: space-between;
   padding: 20px 0 40px 0; box-sizing: border-box;
+  pointer-events: none; /* Screen par touch pass hone ke liye */
 }
 #scannerOverlay.hidden { display: none !important; }
 
-/* Html5-qrcode video element ko full screen karne ke liye */
-#scannerOverlay video {
-  position: absolute !important; top: 0 !important; left: 0 !important;
-  width: 100% !important; height: 100% !important; object-fit: cover !important;
-  z-index: 1 !important;
-}
-
-/* Saare overlay controls video ke upar rahenge */
-#scannerOverlay > * { z-index: 2; position: relative; }
+/* Saare overlay controls par click allow karne ke liye */
+#scannerOverlay > * { pointer-events: auto; }
 
 /* Top Navigation */
 .top-nav { width: 100%; display: flex; justify-content: space-between; padding: 0 20px; box-sizing: border-box; }
 .top-nav button { 
-  background: rgba(0,0,0,0.4); color: white; font-size: 20px; font-weight: bold; 
+  background: rgba(0,0,0,0.6); color: white; font-size: 20px; font-weight: bold; 
   width: 45px; height: 45px; border-radius: 50%; border: 1px solid rgba(255,255,255,0.3);
   display: flex; align-items: center; justify-content: center; cursor: pointer;
+  backdrop-filter: blur(5px);
 }
 
 /* Text Instruction */
-.instruction-text { color: white; font-size: 15px; font-weight: 400; text-shadow: 0px 2px 4px rgba(0,0,0,0.8); margin-top: -10px; }
+.instruction-text { color: white; font-size: 15px; font-weight: 500; text-shadow: 0px 2px 4px rgba(0,0,0,0.9); margin-top: -10px; }
 
-/* Square Scan Frame with Corner Brackets */
+/* Square Scan Frame with Dark Outside & Clear Inside */
 .scan-frame {
   position: relative; width: 260px; height: 260px;
+  box-shadow: 0 0 0 3000px rgba(0, 0, 0, 0.55); /* Frame ke bahar ka hissa dark karega */
 }
-.corner { position: absolute; width: 35px; height: 35px; border-color: white; border-style: solid; }
-.tl { top: 0; left: 0; border-width: 4px 0 0 4px; border-top-left-radius: 8px; }
-.tr { top: 0; right: 0; border-width: 4px 4px 0 0; border-top-right-radius: 8px; }
-.bl { bottom: 0; left: 0; border-width: 0 0 4px 4px; border-bottom-left-radius: 8px; }
-.br { bottom: 0; right: 0; border-width: 0 4px 4px 0; border-bottom-right-radius: 8px; }
+.corner { position: absolute; width: 35px; height: 35px; border-color: white; border-style: solid; z-index: 2; }
+.tl { top: 0; left: 0; border-width: 4px 0 0 4px; border-top-left-radius: 4px; }
+.tr { top: 0; right: 0; border-width: 4px 4px 0 0; border-top-right-radius: 4px; }
+.bl { bottom: 0; left: 0; border-width: 0 0 4px 4px; border-bottom-left-radius: 4px; }
+.br { bottom: 0; right: 0; border-width: 0 4px 4px 0; border-bottom-right-radius: 4px; }
 
 /* Moving Laser Line */
 .laser {
   position: absolute; width: 90%; left: 5%; height: 2px; background: #ff5722;
-  box-shadow: 0 0 10px 2px #ff5722;
+  box-shadow: 0 0 10px 2px #ff5722; z-index: 2;
   animation: scanning 2s infinite ease-in-out;
 }
 @keyframes scanning {
@@ -105,7 +119,7 @@ input[type=range] {
 /* Glassmorphism Bottom Bar */
 .bottom-bar {
   display: flex; justify-content: space-around; width: 85%; max-width: 350px;
-  background: rgba(255, 255, 255, 0.15); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+  background: rgba(40, 40, 40, 0.4); backdrop-filter: blur(15px); -webkit-backdrop-filter: blur(15px);
   border-radius: 40px; padding: 12px 10px; border: 1px solid rgba(255,255,255,0.2); box-shadow: 0 5px 20px rgba(0,0,0,0.3);
 }
 .nav-item { display: flex; flex-direction: column; align-items: center; color: white; font-size: 11px; font-weight: 500; cursor: pointer; width: 33%; }
