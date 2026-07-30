@@ -40,7 +40,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     // ==========================================
-    // 1. BARCODE SCANNER LOGIC (Rectangular Box for 1D Barcodes)
+    // 1. BARCODE SCANNER LOGIC (Exact QR Jaisa Same)
     // ==========================================
     document.getElementById("startScan").onclick = () => {
         isProcessing = false;
@@ -54,26 +54,14 @@ document.addEventListener("DOMContentLoaded", () => {
 
         if (!barcodeScanner) barcodeScanner = new Html5Qrcode("reader");
         
-        // Barcode ke liye Rectangular Box (Wide & Short) - Ye sabse zaroori tha!
-        const barcodeConfig = {
-            fps: 25,
-            qrbox: (viewfinderWidth, viewfinderHeight) => {
-                return {
-                    width: Math.floor(viewfinderWidth * 0.88),  // Chauda (88%)
-                    height: Math.floor(viewfinderHeight * 0.28) // Chhota height (28%)
-                };
-            },
-            videoConstraints: {
-                facingMode: "environment",
-                width: { min: 1280, ideal: 1920 },
-                height: { min: 720, ideal: 1080 },
-                focusMode: "continuous"
-            }
+        const config = {
+            fps: 30,
+            qrbox: null
         };
 
         barcodeScanner.start(
             { facingMode: "environment" }, 
-            barcodeConfig, 
+            config, 
             (code) => {
                 if (isProcessing) return;
                 if (!code || code.trim() === "") return;
@@ -103,7 +91,6 @@ document.addEventListener("DOMContentLoaded", () => {
         readerElem.style.display = "none";
         document.body.style.overflow = "auto";
         
-        // Reset States
         isFlashOn = false;
         currentZoom = 1;
         document.getElementById("torchBtn").innerText = "Flash Off";
@@ -141,7 +128,7 @@ document.addEventListener("DOMContentLoaded", () => {
     };
 
     // ==========================================
-    // 2. QR SCANNER LOGIC (Square Box for QR Codes)
+    // 2. QR SCANNER LOGIC
     // ==========================================
     document.getElementById("startQR").onclick = () => {
         const qrElem = document.getElementById("qr-reader");
@@ -153,18 +140,8 @@ document.addEventListener("DOMContentLoaded", () => {
         if (!qrScanner) qrScanner = new Html5Qrcode("qr-reader");
 
         const qrConfig = {
-            fps: 25,
-            qrbox: (viewfinderWidth, viewfinderHeight) => {
-                let minEdge = Math.min(viewfinderWidth, viewfinderHeight);
-                let qrboxSize = Math.floor(minEdge * 0.7);
-                return { width: qrboxSize, height: qrboxSize }; // Square Box for QR
-            },
-            videoConstraints: {
-                facingMode: "environment",
-                width: { min: 1280, ideal: 1920 },
-                height: { min: 720, ideal: 1080 },
-                focusMode: "continuous"
-            }
+            fps: 30,
+            qrbox: null
         };
 
         qrScanner.start(
