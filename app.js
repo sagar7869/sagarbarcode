@@ -38,12 +38,18 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     // ==========================================
-    // UI OVERLAY CONTROLS (Flash, Zoom, Close)
+    // UI OVERLAY & CAMERA DISPLAY CONTROLS
     // ==========================================
     const scannerOverlay = document.getElementById("scannerOverlay");
 
-    function openOverlay(scannerInstance) {
+    function openOverlay(scannerInstance, camElementId) {
         activeScanner = scannerInstance;
+        
+        // Yahan galti thi: Camera view ko show karna
+        const camElem = document.getElementById(camElementId);
+        camElem.style.display = "block";
+        camElem.classList.add("full-view");
+
         scannerOverlay.classList.remove("hidden");
         document.getElementById("zoomSlider").value = 1;
         isFlashOn = false;
@@ -52,6 +58,13 @@ document.addEventListener("DOMContentLoaded", () => {
 
     async function closeOverlay() {
         scannerOverlay.classList.add("hidden");
+        
+        // Camera view ko wapas hide karna
+        const reader = document.getElementById("reader");
+        const qrReader = document.getElementById("qr-reader");
+        if(reader) { reader.style.display = "none"; reader.classList.remove("full-view"); }
+        if(qrReader) { qrReader.style.display = "none"; qrReader.classList.remove("full-view"); }
+
         await stopAllScanners();
     }
 
@@ -75,12 +88,10 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     }
 
-    // Back button on overlay
     document.getElementById("closeScannerBtn").onclick = async () => {
         await closeOverlay();
     };
 
-    // Zoom Slider functionality
     document.getElementById("zoomSlider").addEventListener("input", async (e) => {
         let zoomVal = parseFloat(e.target.value);
         if (activeScanner && activeScanner.isScanning) {
@@ -90,7 +101,6 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     });
 
-    // Flashlight Toggle functionality
     document.getElementById("flashToggleBtn").onclick = async () => {
         if (!activeScanner || !activeScanner.isScanning) return;
         isFlashOn = !isFlashOn;
@@ -104,7 +114,6 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     };
 
-
     // ==========================================
     // 1. BARCODE SCANNER LOGIC
     // ==========================================
@@ -115,7 +124,7 @@ document.addEventListener("DOMContentLoaded", () => {
             barcodeScanner = new Html5Qrcode("reader");
         }
 
-        openOverlay(barcodeScanner);
+        openOverlay(barcodeScanner, "reader");
 
         try {
             await barcodeScanner.start(
@@ -139,7 +148,6 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     };
 
-
     // ==========================================
     // 2. QR CODE SCANNER LOGIC
     // ==========================================
@@ -148,7 +156,7 @@ document.addEventListener("DOMContentLoaded", () => {
             qrScanner = new Html5Qrcode("qr-reader");
         }
 
-        openOverlay(qrScanner);
+        openOverlay(qrScanner, "qr-reader");
 
         try {
             await qrScanner.start(
@@ -172,7 +180,6 @@ document.addEventListener("DOMContentLoaded", () => {
             await closeOverlay();
         }
     };
-
 
     // ==========================================
     // 3. TABLE UPDATE & SUBMIT LOGIC
@@ -217,7 +224,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
     updateTable();
 
-
     // ==========================================
     // 4. COPY & EXPORT CSV (Barcode)
     // ==========================================
@@ -227,9 +233,7 @@ document.addEventListener("DOMContentLoaded", () => {
         barcodeData.forEach(e => {
             text += `${e.module}\t${e.image}\t${e.remark}\t${e.datetime}\t${e.synced ? "Synced" : "Pending"}\n`;
         });
-        navigator.clipboard.writeText(text)
-            .then(() => alert("Barcode Data Copied to Clipboard!"))
-            .catch(err => alert("Copy failed: " + err));
+        navigator.clipboard.writeText(text).then(() => alert("Copied!")).catch(err => alert("Failed: " + err));
     };
 
     document.getElementById("exportBtn").onclick = () => {
@@ -238,53 +242,40 @@ document.addEventListener("DOMContentLoaded", () => {
         barcodeData.forEach(e => {
             csv += `"${e.module}","${e.image}","${e.remark}","${e.datetime}","${e.synced ? 'Synced' : 'Pending'}"\n`;
         });
-        const blob = new Blob([csv], { type: "text/csv" });
-        const url = URL.createObjectURL(blob);
         const a = document.createElement("a");
-        a.href = url;
+        a.href = URL.createObjectURL(new Blob([csv], { type: "text/csv" }));
         a.download = "SagarBarcode_Data.csv";
         a.click();
-        URL.revokeObjectURL(url);
     };
-
 
     // ==========================================
     // 5. GOOGLE SHEET SYNC LOGIC
     // ==========================================
     document.getElementById("syncBtn").onclick = async () => {
         const unsyncedData = barcodeData.filter(e => !e.synced);
-        
-        if (unsyncedData.length === 0) {
-            return alert("Saara data pehle se hi synced hai!");
-        }
+        if (unsyncedData.length === 0) return alert("Saara data pehle se hi synced hai!");
 
         const btn = document.getElementById("syncBtn");
-        btn.innerText = "Syncing... Please wait";
-        btn.style.background = "#546e7a";
+        btn.innerText = "Syncing...";
         btn.disabled = true;
 
         try {
-            const response = await fetch(WEBAPP_URL, {
-                method: "POST",
-                mode: "no-cors",
-                headers: { "Content-Type": "application/json" },
+            await fetch(WEBAPP_URL, {
+                method: "POST", mode: "no-cors", headers: { "Content-Type": "application/json" },
                 body: JSON.stringify(unsyncedData)
             });
 
             barcodeData.forEach(e => e.synced = true);
             localStorage.setItem("barcodeData", JSON.stringify(barcodeData));
             updateTable();
-            
             alert("Data Google Sheet mein update ho gaya!");
         } catch (error) {
             alert("Sync Error: " + error.message);
         } finally {
             btn.innerText = "Update Google Sheet";
-            btn.style.background = "#ff9800";
             btn.disabled = false;
         }
     };
-
 
     // ==========================================
     // 6. COPY & EXPORT CSV (QR)
@@ -292,26 +283,17 @@ document.addEventListener("DOMContentLoaded", () => {
     document.getElementById("copyQR").onclick = () => {
         if (qrDataList.length === 0) return alert("No QR data to copy!");
         let text = "QR Data\tDate & Time\n";
-        qrDataList.forEach(e => {
-            text += `${e.data}\t${e.time}\n`;
-        });
-        navigator.clipboard.writeText(text)
-            .then(() => alert("QR Data Copied!"))
-            .catch(err => alert("Copy failed: " + err));
+        qrDataList.forEach(e => text += `${e.data}\t${e.time}\n`);
+        navigator.clipboard.writeText(text).then(() => alert("Copied!")).catch(err => alert("Failed: " + err));
     };
 
     document.getElementById("exportQR").onclick = () => {
         if (qrDataList.length === 0) return alert("No QR data to export!");
         let csv = "QR Data,Date & Time\n";
-        qrDataList.forEach(e => {
-            csv += `"${e.data}","${e.time}"\n`;
-        });
-        const blob = new Blob([csv], { type: "text/csv" });
-        const url = URL.createObjectURL(blob);
+        qrDataList.forEach(e => csv += `"${e.data}","${e.time}"\n`);
         const a = document.createElement("a");
-        a.href = url;
+        a.href = URL.createObjectURL(new Blob([csv], { type: "text/csv" }));
         a.download = "SagarQR_Data.csv";
         a.click();
-        URL.revokeObjectURL(url);
     };
 });
