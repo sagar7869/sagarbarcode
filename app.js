@@ -40,10 +40,10 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     // ==========================================
-    // 1. BARCODE SCANNER LOGIC (FIXED GHOST SCAN)
+    // 1. BARCODE SCANNER LOGIC (Rectangular Box for 1D Barcodes)
     // ==========================================
     document.getElementById("startScan").onclick = () => {
-        isProcessing = false; // Reset lock on every new start
+        isProcessing = false;
         const readerElem = document.getElementById("reader");
         const stopBtn = document.getElementById("stopScan");
         
@@ -54,13 +54,14 @@ document.addEventListener("DOMContentLoaded", () => {
 
         if (!barcodeScanner) barcodeScanner = new Html5Qrcode("reader");
         
-        // Barcode ke liye Rectangular box (Best for 1D Barcodes)
-        const config = {
-            fps: 20,
+        // Barcode ke liye Rectangular Box (Wide & Short) - Ye sabse zaroori tha!
+        const barcodeConfig = {
+            fps: 25,
             qrbox: (viewfinderWidth, viewfinderHeight) => {
-                let width = Math.floor(viewfinderWidth * 0.85);
-                let height = Math.floor(viewfinderHeight * 0.35);
-                return { width: width, height: height };
+                return {
+                    width: Math.floor(viewfinderWidth * 0.88),  // Chauda (88%)
+                    height: Math.floor(viewfinderHeight * 0.28) // Chhota height (28%)
+                };
             },
             videoConstraints: {
                 facingMode: "environment",
@@ -72,10 +73,10 @@ document.addEventListener("DOMContentLoaded", () => {
 
         barcodeScanner.start(
             { facingMode: "environment" }, 
-            config, 
+            barcodeConfig, 
             (code) => {
                 if (isProcessing) return;
-                if (!code || code.trim() === "") return; // Ignore fake/empty scans
+                if (!code || code.trim() === "") return;
                 
                 isProcessing = true;
                 playBeep();
@@ -140,7 +141,7 @@ document.addEventListener("DOMContentLoaded", () => {
     };
 
     // ==========================================
-    // 2. QR SCANNER LOGIC
+    // 2. QR SCANNER LOGIC (Square Box for QR Codes)
     // ==========================================
     document.getElementById("startQR").onclick = () => {
         const qrElem = document.getElementById("qr-reader");
@@ -152,11 +153,11 @@ document.addEventListener("DOMContentLoaded", () => {
         if (!qrScanner) qrScanner = new Html5Qrcode("qr-reader");
 
         const qrConfig = {
-            fps: 20,
+            fps: 25,
             qrbox: (viewfinderWidth, viewfinderHeight) => {
                 let minEdge = Math.min(viewfinderWidth, viewfinderHeight);
                 let qrboxSize = Math.floor(minEdge * 0.7);
-                return { width: qrboxSize, height: qrboxSize };
+                return { width: qrboxSize, height: qrboxSize }; // Square Box for QR
             },
             videoConstraints: {
                 facingMode: "environment",
