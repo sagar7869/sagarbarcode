@@ -39,7 +39,9 @@ document.addEventListener("DOMContentLoaded", () => {
         } catch (e) { console.log(e); }
     }
 
-    // --- Barcode Section ---
+    // ==========================================
+    // 1. BARCODE SCANNER LOGIC (UPDATED FOR SPEED)
+    // ==========================================
     document.getElementById("startScan").onclick = () => {
         const readerElem = document.getElementById("reader");
         const stopBtn = document.getElementById("stopScan");
@@ -51,9 +53,28 @@ document.addEventListener("DOMContentLoaded", () => {
 
         if (!barcodeScanner) barcodeScanner = new Html5Qrcode("reader");
         
+        // HD Resolution + Continuous Focus + Native Android Scanner Engine
+        const config = {
+            fps: 30,
+            qrbox: (viewfinderWidth, viewfinderHeight) => {
+                let width = Math.floor(viewfinderWidth * 0.85);
+                let height = Math.floor(viewfinderHeight * 0.35);
+                return { width: width, height: height };
+            },
+            experimentalFeatures: {
+                useBarCodeDetectorIfSupported: true // Fast native scanning
+            },
+            videoConstraints: {
+                facingMode: "environment",
+                width: { min: 1280, ideal: 1920, max: 3840 },
+                height: { min: 720, ideal: 1080, max: 2160 },
+                focusMode: "continuous"
+            }
+        };
+
         barcodeScanner.start(
             { facingMode: "environment" }, 
-            { fps: 30, qrbox: null }, 
+            config, 
             (code) => {
                 if (isProcessing) return;
                 isProcessing = true;
@@ -108,7 +129,9 @@ document.addEventListener("DOMContentLoaded", () => {
         } catch (e) { alert("Zoom not supported"); }
     };
 
-    // --- QR Section ---
+    // ==========================================
+    // 2. QR SCANNER LOGIC (UPDATED FOR SPEED)
+    // ==========================================
     document.getElementById("startQR").onclick = () => {
         const qrElem = document.getElementById("qr-reader");
         const stopBtnQR = document.getElementById("stopQR");
@@ -117,14 +140,37 @@ document.addEventListener("DOMContentLoaded", () => {
         stopBtnQR.classList.add("floating-btn");
 
         if (!qrScanner) qrScanner = new Html5Qrcode("qr-reader");
-        qrScanner.start({ facingMode: "environment" }, { fps: 25, qrbox: null }, (code) => {
-            playBeep();
-            document.getElementById("qrField").value = code;
-            qrDataList.push({ data: code, time: new Date().toLocaleString('en-GB') });
-            localStorage.setItem("qrDataList", JSON.stringify(qrDataList));
-            stopQRScanner();
-            alert("QR Scanned!");
-        });
+
+        const qrConfig = {
+            fps: 30,
+            qrbox: (viewfinderWidth, viewfinderHeight) => {
+                let minEdge = Math.min(viewfinderWidth, viewfinderHeight);
+                let qrboxSize = Math.floor(minEdge * 0.7);
+                return { width: qrboxSize, height: qrboxSize };
+            },
+            experimentalFeatures: {
+                useBarCodeDetectorIfSupported: true
+            },
+            videoConstraints: {
+                facingMode: "environment",
+                width: { min: 1280, ideal: 1920 },
+                height: { min: 720, ideal: 1080 },
+                focusMode: "continuous"
+            }
+        };
+
+        qrScanner.start(
+            { facingMode: "environment" }, 
+            qrConfig, 
+            (code) => {
+                playBeep();
+                document.getElementById("qrField").value = code;
+                qrDataList.push({ data: code, time: new Date().toLocaleString('en-GB') });
+                localStorage.setItem("qrDataList", JSON.stringify(qrDataList));
+                stopQRScanner();
+                alert("QR Scanned!");
+            }
+        ).catch(err => alert("Camera error: " + err));
     };
 
     async function stopQRScanner() {
@@ -164,7 +210,9 @@ document.addEventListener("DOMContentLoaded", () => {
         } catch (e) { alert("Zoom not supported"); }
     };
 
-    // --- Baki ki Logic ---
+    // ==========================================
+    // 3. TABLE UPDATE & SUBMIT LOGIC
+    // ==========================================
     function updateTable() {
         const table = document.getElementById("table");
         table.innerHTML = "<tr><th>Serial</th><th>Photo</th><th>Remark</th><th>Status</th><th>Del</th></tr>";
@@ -199,4 +247,99 @@ document.addEventListener("DOMContentLoaded", () => {
     };
 
     updateTable();
+
+    // ==========================================
+    // 4. BARCODE DATA - COPY & EXPORT CSV
+    // ==========================================
+    document.getElementById("copyBtn").onclick = () => {
+        if (barcodeData.length === 0) return alert("No data to copy!");
+        let text = "Serial\tPhoto\tRemark\tDate & Time\tStatus\n";
+        barcodeData.forEach(e => {
+            text += `${e.module}\t${e.image}\t${e.remark}\t${e.datetime}\t${e.synced ? "Synced" : "Pending"}\n`;
+        });
+        navigator.clipboard.writeText(text)
+            .then(() => alert("Barcode Data Copied to Clipboard!"))
+            .catch(err => alert("Copy failed: " + err));
+    };
+
+    document.getElementById("exportBtn").onclick = () => {
+        if (barcodeData.length === 0) return alert("No data to export!");
+        let csv = "Serial,Photo,Remark,Date & Time,Status\n";
+        barcodeData.forEach(e => {
+            csv += `"${e.module}","${e.image}","${e.remark}","${e.datetime}","${e.synced ? 'Synced' : 'Pending'}"\n`;
+        });
+        const blob = new Blob([csv], { type: "text/csv" });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = "SagarBarcode_Data.csv";
+        a.click();
+        URL.revokeObjectURL(url);
+    };
+
+    // ==========================================
+    // 5. GOOGLE SHEET SYNC LOGIC
+    // ==========================================
+    document.getElementById("syncBtn").onclick = async () => {
+        const unsyncedData = barcodeData.filter(e => !e.synced);
+        
+        if (unsyncedData.length === 0) {
+            return alert("Saara data pehle se hi synced hai!");
+        }
+
+        const btn = document.getElementById("syncBtn");
+        btn.innerText = "Syncing... Please wait";
+        btn.style.background = "#546e7a";
+        btn.disabled = true;
+
+        try {
+            const response = await fetch(WEBAPP_URL, {
+                method: "POST",
+                mode: "no-cors",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(unsyncedData)
+            });
+
+            barcodeData.forEach(e => e.synced = true);
+            localStorage.setItem("barcodeData", JSON.stringify(barcodeData));
+            updateTable();
+            
+            alert("Data Google Sheet mein update ho gaya!");
+        } catch (error) {
+            alert("Sync Error: " + error.message);
+        } finally {
+            btn.innerText = "Update Google Sheet";
+            btn.style.background = "#ff9800";
+            btn.disabled = false;
+        }
+    };
+
+    // ==========================================
+    // 6. QR DATA - COPY & EXPORT CSV
+    // ==========================================
+    document.getElementById("copyQR").onclick = () => {
+        if (qrDataList.length === 0) return alert("No QR data to copy!");
+        let text = "QR Data\tDate & Time\n";
+        qrDataList.forEach(e => {
+            text += `${e.data}\t${e.time}\n`;
+        });
+        navigator.clipboard.writeText(text)
+            .then(() => alert("QR Data Copied!"))
+            .catch(err => alert("Copy failed: " + err));
+    };
+
+    document.getElementById("exportQR").onclick = () => {
+        if (qrDataList.length === 0) return alert("No QR data to export!");
+        let csv = "QR Data,Date & Time\n";
+        qrDataList.forEach(e => {
+            csv += `"${e.data}","${e.time}"\n`;
+        });
+        const blob = new Blob([csv], { type: "text/csv" });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = "SagarQR_Data.csv";
+        a.click();
+        URL.revokeObjectURL(url);
+    };
 });
