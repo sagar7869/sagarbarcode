@@ -8,7 +8,7 @@ document.addEventListener("DOMContentLoaded", () => {
     let audioCtx = null;
     
     let isFlashOn = false;
-    let currentZoom = 1;
+    let activeScanner = null;
 
     // --- Tab Switching ---
     const tabs = document.querySelectorAll(".tabBtn");
@@ -22,8 +22,7 @@ document.addEventListener("DOMContentLoaded", () => {
             document.getElementById(target).style.display = "block";
             tab.classList.add("activeTab");
             
-            if (barcodeScanner && barcodeScanner.isScanning) await barcodeScanner.stop();
-            if (qrScanner && qrScanner.isScanning) await qrScanner.stop();
+            await stopAllScanners();
         };
     });
 
@@ -39,152 +38,139 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     // ==========================================
-    // 1. BARCODE SECTION (Independent Working Logic)
+    // UI OVERLAY CONTROLS (Flash, Zoom, Close)
     // ==========================================
-    const readerElem = document.getElementById("reader");
-    const stopScanBtn = document.getElementById("stopScan");
+    const scannerOverlay = document.getElementById("scannerOverlay");
+
+    function openOverlay(scannerInstance) {
+        activeScanner = scannerInstance;
+        scannerOverlay.classList.remove("hidden");
+        document.getElementById("zoomSlider").value = 1;
+        isFlashOn = false;
+        updateFlashUI();
+    }
+
+    async function closeOverlay() {
+        scannerOverlay.classList.add("hidden");
+        await stopAllScanners();
+    }
+
+    async function stopAllScanners() {
+        try {
+            if (barcodeScanner && barcodeScanner.isScanning) await barcodeScanner.stop();
+            if (qrScanner && qrScanner.isScanning) await qrScanner.stop();
+        } catch (e) { console.log(e); }
+        activeScanner = null;
+    }
+
+    function updateFlashUI() {
+        const flashBtn = document.getElementById("flashToggleBtn");
+        const flashText = document.getElementById("flashText");
+        if (isFlashOn) {
+            flashBtn.classList.add("active-flash");
+            flashText.innerText = "Flash ON";
+        } else {
+            flashBtn.classList.remove("active-flash");
+            flashText.innerText = "Flashlight";
+        }
+    }
+
+    // Back button on overlay
+    document.getElementById("closeScannerBtn").onclick = async () => {
+        await closeOverlay();
+    };
+
+    // Zoom Slider functionality
+    document.getElementById("zoomSlider").addEventListener("input", async (e) => {
+        let zoomVal = parseFloat(e.target.value);
+        if (activeScanner && activeScanner.isScanning) {
+            try {
+                await activeScanner.applyVideoConstraints({ advanced: [{ zoom: zoomVal }] });
+            } catch (err) { console.log("Zoom not supported", err); }
+        }
+    });
+
+    // Flashlight Toggle functionality
+    document.getElementById("flashToggleBtn").onclick = async () => {
+        if (!activeScanner || !activeScanner.isScanning) return;
+        isFlashOn = !isFlashOn;
+        try {
+            await activeScanner.applyVideoConstraints({ advanced: [{ torch: isFlashOn }] });
+            updateFlashUI();
+        } catch (e) {
+            isFlashOn = false;
+            updateFlashUI();
+            alert("Flashlight not supported on this device.");
+        }
+    };
+
+
+    // ==========================================
+    // 1. BARCODE SCANNER LOGIC
+    // ==========================================
     const entryFields = document.getElementById("entryFields");
 
     document.getElementById("startScan").onclick = async () => {
-        readerElem.style.display = "block";
-        readerElem.classList.add("full-view");
-        stopScanBtn.classList.add("floating-btn");
-        document.body.style.overflow = "hidden";
-
         if (!barcodeScanner) {
             barcodeScanner = new Html5Qrcode("reader");
         }
+
+        openOverlay(barcodeScanner);
 
         try {
             await barcodeScanner.start(
                 { facingMode: "environment" },
                 { fps: 20, qrbox: null },
-                (decodedText) => {
+                async (decodedText) => {
                     if (!decodedText || decodedText.trim() === "") return;
                     playBeep();
                     
-                    barcodeScanner.stop().then(() => {
-                        readerElem.classList.remove("full-view");
-                        stopScanBtn.classList.remove("floating-btn");
-                        readerElem.style.display = "none";
-                        document.body.style.overflow = "auto";
-                        
-                        entryFields.style.display = "block";
-                        document.getElementById("barcode").value = decodedText;
-                        document.getElementById("datetime").value = new Date().toLocaleString('en-GB');
-                    }).catch(err => console.log(err));
+                    await closeOverlay();
+                    
+                    entryFields.style.display = "block";
+                    document.getElementById("barcode").value = decodedText;
+                    document.getElementById("datetime").value = new Date().toLocaleString('en-GB');
                 },
                 (errorMessage) => {}
             );
         } catch (err) {
             alert("Barcode Camera Error: " + err);
+            await closeOverlay();
         }
-    };
-
-    stopScanBtn.onclick = async () => {
-        if (barcodeScanner && barcodeScanner.isScanning) {
-            await barcodeScanner.stop();
-        }
-        readerElem.classList.remove("full-view");
-        stopScanBtn.classList.remove("floating-btn");
-        readerElem.style.display = "none";
-        document.body.style.overflow = "auto";
-        
-        isFlashOn = false;
-        currentZoom = 1;
-        document.getElementById("torchBtn").innerText = "Flash Off";
-        document.getElementById("zoomBtn").innerText = "Zoom 1x";
-    };
-
-    document.getElementById("torchBtn").onclick = async (e) => {
-        e.stopPropagation();
-        if (!barcodeScanner || !barcodeScanner.isScanning) return;
-        isFlashOn = !isFlashOn;
-        try {
-            await barcodeScanner.applyVideoConstraints({ advanced: [{ torch: isFlashOn }] });
-            document.getElementById("torchBtn").innerText = isFlashOn ? "Flash ON" : "Flash Off";
-        } catch (e) { alert("Flash not supported"); }
-    };
-
-    document.getElementById("zoomBtn").onclick = async (e) => {
-        e.stopPropagation();
-        if (!barcodeScanner || !barcodeScanner.isScanning) return;
-        currentZoom = (currentZoom === 1) ? 2 : 1;
-        try {
-            await barcodeScanner.applyVideoConstraints({ advanced: [{ zoom: currentZoom }] });
-            document.getElementById("zoomBtn").innerText = "Zoom " + currentZoom + "x";
-        } catch (e) { alert("Zoom not supported"); }
     };
 
 
     // ==========================================
-    // 2. QR CODE SECTION (Independent Working Logic)
+    // 2. QR CODE SCANNER LOGIC
     // ==========================================
-    const qrElem = document.getElementById("qr-reader");
-    const stopQRBtn = document.getElementById("stopQR");
-
     document.getElementById("startQR").onclick = async () => {
-        qrElem.style.display = "block";
-        qrElem.classList.add("full-view");
-        stopQRBtn.classList.add("floating-btn");
-
         if (!qrScanner) {
             qrScanner = new Html5Qrcode("qr-reader");
         }
+
+        openOverlay(qrScanner);
 
         try {
             await qrScanner.start(
                 { facingMode: "environment" },
                 { fps: 20, qrbox: null },
-                (decodedText) => {
+                async (decodedText) => {
                     if (!decodedText || decodedText.trim() === "") return;
                     playBeep();
                     
-                    qrScanner.stop().then(() => {
-                        qrElem.classList.remove("full-view");
-                        stopQRBtn.classList.remove("floating-btn");
-                        qrElem.style.display = "none";
-                        
-                        document.getElementById("qrField").value = decodedText;
-                        qrDataList.push({ data: decodedText, time: new Date().toLocaleString('en-GB') });
-                        localStorage.setItem("qrDataList", JSON.stringify(qrDataList));
-                        alert("QR Scanned Successfully!");
-                    }).catch(err => console.log(err));
+                    await closeOverlay();
+                    
+                    document.getElementById("qrField").value = decodedText;
+                    qrDataList.push({ data: decodedText, time: new Date().toLocaleString('en-GB') });
+                    localStorage.setItem("qrDataList", JSON.stringify(qrDataList));
+                    alert("QR Scanned Successfully!");
                 },
                 (errorMessage) => {}
             );
         } catch (err) {
             alert("QR Camera Error: " + err);
+            await closeOverlay();
         }
-    };
-
-    stopQRBtn.onclick = async () => {
-        if (qrScanner && qrScanner.isScanning) {
-            await qrScanner.stop();
-        }
-        qrElem.classList.remove("full-view");
-        stopQRBtn.classList.remove("floating-btn");
-        qrElem.style.display = "none";
-    };
-
-    document.getElementById("torchBtnQR").onclick = async (e) => {
-        e.stopPropagation();
-        if (!qrScanner || !qrScanner.isScanning) return;
-        isFlashOn = !isFlashOn;
-        try {
-            await qrScanner.applyVideoConstraints({ advanced: [{ torch: isFlashOn }] });
-            document.getElementById("torchBtnQR").innerText = isFlashOn ? "Flash ON" : "Flash Off";
-        } catch (e) { alert("Flash not supported"); }
-    };
-
-    document.getElementById("zoomBtnQR").onclick = async (e) => {
-        e.stopPropagation();
-        if (!qrScanner || !qrScanner.isScanning) return;
-        currentZoom = (currentZoom === 1) ? 2 : 1;
-        try {
-            await qrScanner.applyVideoConstraints({ advanced: [{ zoom: currentZoom }] });
-            document.getElementById("zoomBtnQR").innerText = "Zoom " + currentZoom + "x";
-        } catch (e) { alert("Zoom not supported"); }
     };
 
 
