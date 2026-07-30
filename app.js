@@ -40,7 +40,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     // ==========================================
-    // 1. BARCODE SCANNER LOGIC (SUPER FAST & FIXED)
+    // 1. BARCODE SCANNER LOGIC (FIXED & FAST)
     // ==========================================
     document.getElementById("startScan").onclick = () => {
         const readerElem = document.getElementById("reader");
@@ -53,21 +53,18 @@ document.addEventListener("DOMContentLoaded", () => {
 
         if (!barcodeScanner) barcodeScanner = new Html5Qrcode("reader");
         
-        // Native Hardware Engine + Continuous Focus
+        // Wahi configuration jo QR mein perfect chal rahi hai
         const config = {
             fps: 30,
             qrbox: (viewfinderWidth, viewfinderHeight) => {
-                let width = Math.floor(viewfinderWidth * 0.9);
-                let height = Math.floor(viewfinderHeight * 0.4);
-                return { width: width, height: height };
-            },
-            experimentalFeatures: {
-                useBarCodeDetectorIfSupported: true // Fast native scanning
+                let minEdge = Math.min(viewfinderWidth, viewfinderHeight);
+                let size = Math.floor(minEdge * 0.75);
+                return { width: size, height: size };
             },
             videoConstraints: {
                 facingMode: "environment",
-                width: { min: 1280, ideal: 1920, max: 3840 },
-                height: { min: 720, ideal: 1080, max: 2160 },
+                width: { min: 1280, ideal: 1920 },
+                height: { min: 720, ideal: 1080 },
                 focusMode: "continuous"
             }
         };
@@ -130,7 +127,7 @@ document.addEventListener("DOMContentLoaded", () => {
     };
 
     // ==========================================
-    // 2. QR SCANNER LOGIC (SUPER FAST)
+    // 2. QR SCANNER LOGIC
     // ==========================================
     document.getElementById("startQR").onclick = () => {
         const qrElem = document.getElementById("qr-reader");
@@ -147,9 +144,6 @@ document.addEventListener("DOMContentLoaded", () => {
                 let minEdge = Math.min(viewfinderWidth, viewfinderHeight);
                 let qrboxSize = Math.floor(minEdge * 0.7);
                 return { width: qrboxSize, height: qrboxSize };
-            },
-            experimentalFeatures: {
-                useBarCodeDetectorIfSupported: true
             },
             videoConstraints: {
                 facingMode: "environment",
