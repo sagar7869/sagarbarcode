@@ -40,7 +40,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     // ==========================================
-    // 1. BARCODE SCANNER LOGIC (UPDATED FOR SPEED)
+    // 1. BARCODE SCANNER LOGIC (SUPER FAST & FIXED)
     // ==========================================
     document.getElementById("startScan").onclick = () => {
         const readerElem = document.getElementById("reader");
@@ -53,12 +53,12 @@ document.addEventListener("DOMContentLoaded", () => {
 
         if (!barcodeScanner) barcodeScanner = new Html5Qrcode("reader");
         
-        // HD Resolution + Continuous Focus + Native Android Scanner Engine
+        // Native Hardware Engine + Continuous Focus
         const config = {
             fps: 30,
             qrbox: (viewfinderWidth, viewfinderHeight) => {
-                let width = Math.floor(viewfinderWidth * 0.85);
-                let height = Math.floor(viewfinderHeight * 0.35);
+                let width = Math.floor(viewfinderWidth * 0.9);
+                let height = Math.floor(viewfinderHeight * 0.4);
                 return { width: width, height: height };
             },
             experimentalFeatures: {
@@ -130,7 +130,7 @@ document.addEventListener("DOMContentLoaded", () => {
     };
 
     // ==========================================
-    // 2. QR SCANNER LOGIC (UPDATED FOR SPEED)
+    // 2. QR SCANNER LOGIC (SUPER FAST)
     // ==========================================
     document.getElementById("startQR").onclick = () => {
         const qrElem = document.getElementById("qr-reader");
