@@ -6,7 +6,6 @@ document.addEventListener("DOMContentLoaded", () => {
     let barcodeScanner = null;
     let qrScanner = null;
     let audioCtx = null;
-    let isProcessing = false;
     
     let isFlashOn = false;
     let currentZoom = 1;
@@ -40,10 +39,9 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     // ==========================================
-    // 1. BARCODE SCANNER LOGIC (Exact QR Jaisa Same)
+    // 1. BARCODE SCANNER LOGIC (QR Jaisa Same & Simple)
     // ==========================================
     document.getElementById("startScan").onclick = () => {
-        isProcessing = false;
         const readerElem = document.getElementById("reader");
         const stopBtn = document.getElementById("stopScan");
         
@@ -53,7 +51,8 @@ document.addEventListener("DOMContentLoaded", () => {
         document.body.style.overflow = "hidden";
 
         if (!barcodeScanner) barcodeScanner = new Html5Qrcode("reader");
-        
+
+        // Exactly same config jo QR mein successfully chal rahi hai
         const config = {
             fps: 30,
             qrbox: null
@@ -63,17 +62,11 @@ document.addEventListener("DOMContentLoaded", () => {
             { facingMode: "environment" }, 
             config, 
             (code) => {
-                if (isProcessing) return;
                 if (!code || code.trim() === "") return;
-                
-                isProcessing = true;
                 playBeep();
                 stopBarcodeScanner(code);
             }
-        ).catch(err => {
-            isProcessing = false;
-            alert("Camera error: " + err);
-        });
+        ).catch(err => alert("Camera error: " + err));
     };
 
     async function stopBarcodeScanner(code = null) {
@@ -101,7 +94,6 @@ document.addEventListener("DOMContentLoaded", () => {
             document.getElementById("barcode").value = code;
             document.getElementById("datetime").value = new Date().toLocaleString('en-GB');
         }
-        isProcessing = false;
     }
 
     document.getElementById("stopScan").onclick = () => stopBarcodeScanner();
