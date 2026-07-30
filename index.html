@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>SagarBarcode PWA</title>
 <link rel="manifest" href="manifest.json">
 
@@ -36,15 +36,10 @@
   </div>
 
   <div class="card">
-    <div id="reader" class="cameraPreview">
-      <div class="cam-controls">
-        <button id="torchBtn" class="ctrl-btn">Flash Off</button>
-        <button id="zoomBtn" class="ctrl-btn">Zoom 1x</button>
-      </div>
-    </div>
-
+    <!-- Hidden elements required by html5-qrcode library -->
+    <div id="reader" style="display:none;"></div>
+    
     <button id="startScan" autofocus>Start Scan</button>
-    <button id="stopScan">Stop Scan</button>
 
     <div id="entryFields" style="display:none;">
       <input id="barcode" placeholder="Serial Number" autocomplete="off">
@@ -78,21 +73,60 @@
     <strong>QR Code Scanner</strong>
   </div>
   
-  <div id="qr-reader" class="cameraPreview">
-    <div class="cam-controls">
-        <button id="torchBtnQR" class="ctrl-btn">Flash Off</button>
-        <button id="zoomBtnQR" class="ctrl-btn">Zoom 1x</button>
-      </div>
-  </div>
-  
+  <div id="qr-reader" style="display:none;"></div>
   <button id="startQR">Start QR Scan</button>
-  <button id="stopQR">Stop QR Scan</button>
   
   <input id="qrField" placeholder="Scanned QR Data" readonly style="margin-top: 15px;">
   
   <button id="copyQR">Copy QR Data</button>
   <button id="exportQR">Export QR CSV</button>
 </section>
+
+<!-- ============================================== -->
+<!-- PREMIUM NATIVE SCANNER OVERLAY (Aapki Image Jaisa) -->
+<!-- ============================================== -->
+<div id="scannerOverlay" class="hidden">
+  <!-- Top Navigation Bar -->
+  <div class="top-nav">
+    <button id="closeScannerBtn">❮</button>
+    <button id="helpBtn">?</button>
+  </div>
+
+  <!-- Instruction Text -->
+  <div class="instruction-text">Put the code into the frame.</div>
+
+  <!-- Square Scanning Frame with Corners & Laser -->
+  <div class="scan-frame">
+    <div class="corner tl"></div>
+    <div class="corner tr"></div>
+    <div class="corner bl"></div>
+    <div class="corner br"></div>
+    <div class="laser"></div>
+  </div>
+
+  <!-- Vertical Zoom Slider (Right Side) -->
+  <div class="zoom-container">
+    <span class="zoom-icon">⊕</span>
+    <input type="range" id="zoomSlider" min="1" max="3" step="0.1" value="1">
+    <span class="zoom-icon">⊖</span>
+  </div>
+
+  <!-- Bottom Glassmorphism Bar (Flashlight, etc.) -->
+  <div class="bottom-bar">
+    <div class="nav-item">
+      <span class="icon">🖼️</span>
+      <span>Scan Image</span>
+    </div>
+    <div class="nav-item" id="flashToggleBtn">
+      <span class="icon">🔦</span>
+      <span id="flashText">Flashlight</span>
+    </div>
+    <div class="nav-item">
+      <span class="icon">📑</span>
+      <span>Batch Scan</span>
+    </div>
+  </div>
+</div>
 
 <footer>Design by – Sagar Herole</footer>
 
