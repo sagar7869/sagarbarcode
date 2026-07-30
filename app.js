@@ -39,7 +39,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     // ==========================================
-    // 1. BARCODE SECTION (Dedicated Independent Logic)
+    // 1. BARCODE SECTION (Independent Working Logic)
     // ==========================================
     const readerElem = document.getElementById("reader");
     const stopScanBtn = document.getElementById("stopScan");
@@ -61,25 +61,20 @@ document.addEventListener("DOMContentLoaded", () => {
                 { fps: 20, qrbox: null },
                 (decodedText) => {
                     if (!decodedText || decodedText.trim() === "") return;
-                    
                     playBeep();
                     
-                    // Stop scanner immediately after successful scan
                     barcodeScanner.stop().then(() => {
                         readerElem.classList.remove("full-view");
                         stopScanBtn.classList.remove("floating-btn");
                         readerElem.style.display = "none";
                         document.body.style.overflow = "auto";
                         
-                        // Open Entry Fields & Fill Data
                         entryFields.style.display = "block";
                         document.getElementById("barcode").value = decodedText;
                         document.getElementById("datetime").value = new Date().toLocaleString('en-GB');
                     }).catch(err => console.log(err));
                 },
-                (errorMessage) => {
-                    // Scanning errors/frame misses ignore honge taaki camera band na ho
-                }
+                (errorMessage) => {}
             );
         } catch (err) {
             alert("Barcode Camera Error: " + err);
@@ -101,7 +96,6 @@ document.addEventListener("DOMContentLoaded", () => {
         document.getElementById("zoomBtn").innerText = "Zoom 1x";
     };
 
-    // Barcode Flash Control
     document.getElementById("torchBtn").onclick = async (e) => {
         e.stopPropagation();
         if (!barcodeScanner || !barcodeScanner.isScanning) return;
@@ -112,7 +106,6 @@ document.addEventListener("DOMContentLoaded", () => {
         } catch (e) { alert("Flash not supported"); }
     };
 
-    // Barcode Zoom Control
     document.getElementById("zoomBtn").onclick = async (e) => {
         e.stopPropagation();
         if (!barcodeScanner || !barcodeScanner.isScanning) return;
@@ -125,7 +118,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
 
     // ==========================================
-    // 2. QR CODE SECTION (Dedicated Independent Logic)
+    // 2. QR CODE SECTION (Independent Working Logic)
     // ==========================================
     const qrElem = document.getElementById("qr-reader");
     const stopQRBtn = document.getElementById("stopQR");
@@ -145,7 +138,6 @@ document.addEventListener("DOMContentLoaded", () => {
                 { fps: 20, qrbox: null },
                 (decodedText) => {
                     if (!decodedText || decodedText.trim() === "") return;
-                    
                     playBeep();
                     
                     qrScanner.stop().then(() => {
@@ -175,7 +167,6 @@ document.addEventListener("DOMContentLoaded", () => {
         qrElem.style.display = "none";
     };
 
-    // QR Flash/Zoom Control
     document.getElementById("torchBtnQR").onclick = async (e) => {
         e.stopPropagation();
         if (!qrScanner || !qrScanner.isScanning) return;
@@ -198,7 +189,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
 
     // ==========================================
-    // 3. TABLE UPDATE & SUBMIT LOGIC (Barcode Workflow)
+    // 3. TABLE UPDATE & SUBMIT LOGIC
     // ==========================================
     function updateTable() {
         const table = document.getElementById("table");
@@ -224,7 +215,6 @@ document.addEventListener("DOMContentLoaded", () => {
         localStorage.setItem("barcodeData", JSON.stringify(barcodeData));
         updateTable();
         
-        // Clear input fields and hide entry section
         document.getElementById("barcode").value = "";
         document.getElementById("photo").value = "";
         document.getElementById("remark").value = "";
@@ -243,7 +233,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
 
     // ==========================================
-    // 4. COPY & EXPORT CSV (Barcode Section)
+    // 4. COPY & EXPORT CSV (Barcode)
     // ==========================================
     document.getElementById("copyBtn").onclick = () => {
         if (barcodeData.length === 0) return alert("No data to copy!");
@@ -311,7 +301,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
 
     // ==========================================
-    // 6. COPY & EXPORT CSV (QR Section)
+    // 6. COPY & EXPORT CSV (QR)
     // ==========================================
     document.getElementById("copyQR").onclick = () => {
         if (qrDataList.length === 0) return alert("No QR data to copy!");
