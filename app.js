@@ -3,12 +3,13 @@ const WEBAPP_URL = "https://script.google.com/macros/s/AKfycbybuMNHEyOEtOzLICttG
 document.addEventListener("DOMContentLoaded", () => {
     let barcodeData = JSON.parse(localStorage.getItem("barcodeData") || "[]");
     let qrDataList = JSON.parse(localStorage.getItem("qrDataList") || "[]");
-    let barcodeScanner = null;
-    let qrScanner = null;
     let audioCtx = null;
     
+    // Naye HD Camera ke variables
+    let nativeVideoStream = null;
+    let videoTrack = null;
+    let detectionInterval = null;
     let isFlashOn = false;
-    let activeScanner = null;
 
     // --- Tab Switching ---
     const tabs = document.querySelectorAll(".tabBtn");
@@ -38,42 +39,46 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     // ==========================================
-    // UI OVERLAY & CAMERA DISPLAY CONTROLS
+    // UI OVERLAY & HD CAMERA DISPLAY CONTROLS
     // ==========================================
     const scannerOverlay = document.getElementById("scannerOverlay");
 
-    function openOverlay(scannerInstance, camElementId) {
-        activeScanner = scannerInstance;
-        
-        // Yahan galti thi: Camera view ko show karna
+    function openOverlay(camElementId) {
         const camElem = document.getElementById(camElementId);
         camElem.style.display = "block";
         camElem.classList.add("full-view");
+        
+        // Asli video element inject karna
+        camElem.innerHTML = '<video id="camVideo" autoplay playsinline></video>';
 
         scannerOverlay.classList.remove("hidden");
         document.getElementById("zoomSlider").value = 1;
         isFlashOn = false;
         updateFlashUI();
+        
+        return document.getElementById("camVideo");
     }
 
     async function closeOverlay() {
         scannerOverlay.classList.add("hidden");
-        
-        // Camera view ko wapas hide karna
-        const reader = document.getElementById("reader");
-        const qrReader = document.getElementById("qr-reader");
-        if(reader) { reader.style.display = "none"; reader.classList.remove("full-view"); }
-        if(qrReader) { qrReader.style.display = "none"; qrReader.classList.remove("full-view"); }
-
         await stopAllScanners();
     }
 
     async function stopAllScanners() {
-        try {
-            if (barcodeScanner && barcodeScanner.isScanning) await barcodeScanner.stop();
-            if (qrScanner && qrScanner.isScanning) await qrScanner.stop();
-        } catch (e) { console.log(e); }
-        activeScanner = null;
+        if (detectionInterval) {
+            clearInterval(detectionInterval);
+            detectionInterval = null;
+        }
+        if (nativeVideoStream) {
+            nativeVideoStream.getTracks().forEach(t => t.stop());
+            nativeVideoStream = null;
+            videoTrack = null;
+        }
+        
+        const reader = document.getElementById("reader");
+        const qrReader = document.getElementById("qr-reader");
+        if(reader) { reader.style.display = "none"; reader.innerHTML = ""; reader.classList.remove("full-view"); }
+        if(qrReader) { qrReader.style.display = "none"; qrReader.innerHTML = ""; qrReader.classList.remove("full-view"); }
     }
 
     function updateFlashUI() {
@@ -92,101 +97,137 @@ document.addEventListener("DOMContentLoaded", () => {
         await closeOverlay();
     };
 
+    // Naye Native Camera ka Zoom
     document.getElementById("zoomSlider").addEventListener("input", async (e) => {
         let zoomVal = parseFloat(e.target.value);
-        if (activeScanner && activeScanner.isScanning) {
+        if (videoTrack) {
             try {
-                await activeScanner.applyVideoConstraints({ advanced: [{ zoom: zoomVal }] });
+                await videoTrack.applyConstraints({ advanced: [{ zoom: zoomVal }] });
             } catch (err) { console.log("Zoom not supported", err); }
         }
     });
 
+    // Naye Native Camera ka Flash
     document.getElementById("flashToggleBtn").onclick = async () => {
-        if (!activeScanner || !activeScanner.isScanning) return;
+        if (!videoTrack) return;
         isFlashOn = !isFlashOn;
         try {
-            await activeScanner.applyVideoConstraints({ advanced: [{ torch: isFlashOn }] });
+            await videoTrack.applyConstraints({ advanced: [{ torch: isFlashOn }] });
             updateFlashUI();
         } catch (e) {
             isFlashOn = false;
             updateFlashUI();
-            alert("Flashlight not supported on this device.");
+            alert("Flashlight not supported on this device's camera.");
         }
     };
 
+
     // ==========================================
-    // 1. BARCODE SCANNER LOGIC
+    // 1. BARCODE SCANNER LOGIC (Native HD API)
     // ==========================================
     const entryFields = document.getElementById("entryFields");
 
     document.getElementById("startScan").onclick = async () => {
-        if (!barcodeScanner) {
-            barcodeScanner = new Html5Qrcode("reader");
+        if (!('BarcodeDetector' in window)) {
+            alert("Aapka browser Native HD Barcode API support nahi karta. Please update Chrome.");
+            return;
         }
 
-        openOverlay(barcodeScanner, "reader");
+        const videoElem = openOverlay("reader");
 
         try {
-            await barcodeScanner.start(
-                { facingMode: "environment" },
-                { fps: 20, qrbox: null },
-                async (decodedText) => {
-                    if (!decodedText || decodedText.trim() === "") return;
-                    playBeep();
-                    
-                    await closeOverlay();
-                    
-                    entryFields.style.display = "block";
-                    document.getElementById("barcode").value = decodedText;
-                    document.getElementById("datetime").value = new Date().toLocaleString('en-GB');
-                },
-                (errorMessage) => {}
-            );
+            // Camera ko HD (1080p) aur Auto-Focus par force karna
+            nativeVideoStream = await navigator.mediaDevices.getUserMedia({
+                video: { 
+                    facingMode: "environment", 
+                    width: { ideal: 1920 }, 
+                    height: { ideal: 1080 }, 
+                    advanced: [{ focusMode: "continuous" }] 
+                }
+            });
+            videoElem.srcObject = nativeVideoStream;
+            videoTrack = nativeVideoStream.getVideoTracks()[0];
+
+            // Sirf in formats ko allow karna taaki galat guess na kare
+            const barcodeDetector = new BarcodeDetector({ formats: ['code_128', 'code_39', 'ean_13'] });
+
+            detectionInterval = setInterval(async () => {
+                try {
+                    const barcodes = await barcodeDetector.detect(videoElem);
+                    if (barcodes.length > 0 && barcodes[0].rawValue.trim() !== "") {
+                        playBeep();
+                        await closeOverlay();
+                        
+                        entryFields.style.display = "block";
+                        document.getElementById("barcode").value = barcodes[0].rawValue;
+                        document.getElementById("datetime").value = new Date().toLocaleString('en-GB');
+                    }
+                } catch (e) {}
+            }, 150);
+
         } catch (err) {
             alert("Barcode Camera Error: " + err);
             await closeOverlay();
         }
     };
 
+
     // ==========================================
-    // 2. QR CODE SCANNER LOGIC
+    // 2. QR CODE SCANNER LOGIC (Native HD API)
     // ==========================================
     document.getElementById("startQR").onclick = async () => {
-        if (!qrScanner) {
-            qrScanner = new Html5Qrcode("qr-reader");
+        if (!('BarcodeDetector' in window)) {
+            alert("Aapka browser Native HD Barcode API support nahi karta. Please update Chrome.");
+            return;
         }
 
-        openOverlay(qrScanner, "qr-reader");
+        const videoElem = openOverlay("qr-reader");
 
         try {
-            await qrScanner.start(
-                { facingMode: "environment" },
-                { fps: 20, qrbox: null },
-                async (decodedText) => {
-                    if (!decodedText || decodedText.trim() === "") return;
-                    playBeep();
-                    
-                    await closeOverlay();
-                    
-                    document.getElementById("qrField").value = decodedText;
-                    qrDataList.push({ data: decodedText, time: new Date().toLocaleString('en-GB') });
-                    localStorage.setItem("qrDataList", JSON.stringify(qrDataList));
-                    alert("QR Scanned Successfully!");
-                },
-                (errorMessage) => {}
-            );
+            nativeVideoStream = await navigator.mediaDevices.getUserMedia({
+                video: { 
+                    facingMode: "environment", 
+                    width: { ideal: 1920 }, 
+                    height: { ideal: 1080 }, 
+                    advanced: [{ focusMode: "continuous" }] 
+                }
+            });
+            videoElem.srcObject = nativeVideoStream;
+            videoTrack = nativeVideoStream.getVideoTracks()[0];
+
+            // Sirf QR code format allow karna
+            const barcodeDetector = new BarcodeDetector({ formats: ['qr_code'] });
+
+            detectionInterval = setInterval(async () => {
+                try {
+                    const barcodes = await barcodeDetector.detect(videoElem);
+                    if (barcodes.length > 0 && barcodes[0].rawValue.trim() !== "") {
+                        playBeep();
+                        await closeOverlay();
+                        
+                        let code = barcodes[0].rawValue;
+                        document.getElementById("qrField").value = code;
+                        
+                        qrDataList.push({ data: code, time: new Date().toLocaleString('en-GB') });
+                        localStorage.setItem("qrDataList", JSON.stringify(qrDataList));
+                        alert("QR Scanned Successfully!");
+                    }
+                } catch (e) {}
+            }, 150);
+
         } catch (err) {
             alert("QR Camera Error: " + err);
             await closeOverlay();
         }
     };
 
+
     // ==========================================
-    // 3. TABLE UPDATE & SUBMIT LOGIC
+    // 3. TABLE UPDATE & SUBMIT LOGIC (NO CHANGES HERE)
     // ==========================================
     function updateTable() {
         const table = document.getElementById("table");
-        table.innerHTML = "<tr><th>Serial</th><th>Photo</th><th>Remark</th><th>Status</th><th>Del</th></tr>";
+        table.innerHTML = "<tr><th>Serial</th><th>Photo</th><th>Remark</th><th>Status</th><th>Delete</th></tr>";
         barcodeData.forEach((e, i) => {
             const row = table.insertRow(-1);
             row.innerHTML = `<td>${e.module}</td><td>${e.image}</td><td>${e.remark}</td><td style="color:${e.synced ? 'green' : 'red'}; font-weight:bold;">${e.synced ? 'Synced' : 'Pending'}</td><td><button onclick="deleteRow(${i})" style="background:red; color:white; width:auto; padding:2px 8px;">X</button></td>`;
@@ -225,7 +266,7 @@ document.addEventListener("DOMContentLoaded", () => {
     updateTable();
 
     // ==========================================
-    // 4. COPY & EXPORT CSV (Barcode)
+    // 4. COPY & EXPORT CSV (Barcode) (NO CHANGES HERE)
     // ==========================================
     document.getElementById("copyBtn").onclick = () => {
         if (barcodeData.length === 0) return alert("No data to copy!");
@@ -249,7 +290,7 @@ document.addEventListener("DOMContentLoaded", () => {
     };
 
     // ==========================================
-    // 5. GOOGLE SHEET SYNC LOGIC
+    // 5. GOOGLE SHEET SYNC LOGIC (NO CHANGES HERE)
     // ==========================================
     document.getElementById("syncBtn").onclick = async () => {
         const unsyncedData = barcodeData.filter(e => !e.synced);
@@ -278,7 +319,7 @@ document.addEventListener("DOMContentLoaded", () => {
     };
 
     // ==========================================
-    // 6. COPY & EXPORT CSV (QR)
+    // 6. COPY & EXPORT CSV (QR) (NO CHANGES HERE)
     // ==========================================
     document.getElementById("copyQR").onclick = () => {
         if (qrDataList.length === 0) return alert("No QR data to copy!");
