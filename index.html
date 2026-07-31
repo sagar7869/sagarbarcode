@@ -15,7 +15,7 @@
 </script>
   
 <link rel="stylesheet" href="style.css">
-<script src="https://unpkg.com/html5-qrcode"></script>
+<!-- Purani scan library hata di gayi hai taaki Native HD API use ho sake -->
 </head>
 
 <body>
@@ -36,7 +36,7 @@
   </div>
 
   <div class="card">
-    <!-- Hidden elements required by html5-qrcode library -->
+    <!-- Hidden elements (purane wale chhod diye hain taaki design disturb na ho) -->
     <div id="reader" style="display:none;"></div>
     
     <button id="startScan" autofocus>Start Scan</button>
@@ -81,6 +81,13 @@
   <button id="copyQR">Copy QR Data</button>
   <button id="exportQR">Export QR CSV</button>
 </section>
+
+<!-- ============================================== -->
+<!-- CAMERA PREVIEW (Peeche chalne wala asli HD camera) -->
+<!-- ============================================== -->
+<div id="cameraContainer" class="hidden">
+    <video id="nativeVideo" autoplay playsinline></video>
+</div>
 
 <!-- ============================================== -->
 <!-- PREMIUM NATIVE SCANNER OVERLAY (Aapki Image Jaisa) -->
