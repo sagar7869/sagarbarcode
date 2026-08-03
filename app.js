@@ -350,43 +350,61 @@ document.addEventListener("DOMContentLoaded", () => {
     // ==========================================
     
     // Barcode WhatsApp Share
+  
+});    // ==========================================
+    // 7. WHATSAPP SHARE LOGIC (EXCEL .xlsx)
+    // ==========================================
+    
+    // Barcode WhatsApp Share
     const shareWaBtn = document.getElementById("shareWaBtn");
     if(shareWaBtn) {
         shareWaBtn.onclick = async () => {
             if (barcodeData.length === 0) return alert("Bhai, share karne ke liye koi data nahi hai!");
             if (typeof XLSX === "undefined") return alert("Excel library load nahi hui hai. Page refresh karein.");
 
-            const excelData = barcodeData.map(e => ({
-                "Serial": e.module, "Photo": e.image, "Remark": e.remark, 
-                "Date & Time": e.datetime, "Status": e.synced ? "Synced" : "Pending"
-            }));
+            // Button dabne par pata chale ki click hua hai
+            shareWaBtn.innerText = "Sharing...";
 
-            const ws = XLSX.utils.json_to_sheet(excelData);
-            const wb = XLSX.utils.book_new();
-            XLSX.utils.book_append_sheet(wb, ws, "Barcode Data");
-            
-            const wbout = XLSX.write(wb, { bookType: 'xlsx', type: 'array' });
-            const file = new File([wbout], "SagarBarcode_Data.xlsx", { 
-                type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" 
-            });
+            try {
+                const excelData = barcodeData.map(e => ({
+                    "Serial": e.module, "Photo": e.image, "Remark": e.remark, 
+                    "Date & Time": e.datetime, "Status": e.synced ? "Synced" : "Pending"
+                }));
 
-            if (navigator.canShare && navigator.canShare({ files: [file] })) {
-                try {
+                const ws = XLSX.utils.json_to_sheet(excelData);
+                const wb = XLSX.utils.book_new();
+                XLSX.utils.book_append_sheet(wb, ws, "Barcode Data");
+                
+                const wbout = XLSX.write(wb, { bookType: 'xlsx', type: 'array' });
+                const file = new File([wbout], "SagarBarcode_Data.xlsx", { 
+                    type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" 
+                });
+
+                // Check agar phone File Share support karta hai
+                if (navigator.canShare && navigator.canShare({ files: [file] })) {
                     await navigator.share({
                         files: [file],
                         title: 'SagarBarcode Data',
                         text: 'Scanned Barcode Data ki Excel file.'
                     });
-                } catch (err) {
-                    console.log("Share cancel ho gaya:", err);
+                } else {
+                    // Agar phone file share support nahi karta, toh direct message WhatsApp par bhejega
+                    alert("Aapka browser file share support nahi karta, Excel ka data Text mein bhej rahe hain.");
+                    let textData = "Scanned Barcodes:\n\n";
+                    barcodeData.forEach(e => textData += `Serial: ${e.module} (Photo: ${e.image})\n`);
+                    let waUrl = `https://wa.me/?text=${encodeURIComponent(textData)}`;
+                    
+                    // window.open pop-up block hone se bachane ke liye sidha location change
+                    window.location.href = waUrl; 
                 }
-            } else {
-                let textData = "Scanned Barcodes:\n\n";
-                barcodeData.forEach(e => textData += `${e.module} (Photo: ${e.image})\n`);
-                let waUrl = `https://wa.me/?text=${encodeURIComponent(textData)}`;
-                window.open(waUrl, '_blank');
+            } catch (err) {
+                console.log("Share cancel hua ya error:", err);
+            } finally {
+                shareWaBtn.innerText = "Share on WhatsApp 🟢"; // Button name wapas normal karna
             }
         };
+    } else {
+        console.log("shareWaBtn HTML mein nahi mila!");
     }
 
     // QR WhatsApp Share
@@ -395,36 +413,43 @@ document.addEventListener("DOMContentLoaded", () => {
         shareWaQRBtn.onclick = async () => {
             if (qrDataList.length === 0) return alert("Share karne ke liye koi QR data nahi hai!");
             if (typeof XLSX === "undefined") return alert("Excel library load nahi hui hai. Page refresh karein.");
-
-            const excelData = qrDataList.map(e => ({
-                "QR Data": e.data, "Date & Time": e.time
-            }));
-
-            const ws = XLSX.utils.json_to_sheet(excelData);
-            const wb = XLSX.utils.book_new();
-            XLSX.utils.book_append_sheet(wb, ws, "QR Data");
             
-            const wbout = XLSX.write(wb, { bookType: 'xlsx', type: 'array' });
-            const file = new File([wbout], "SagarQR_Data.xlsx", { 
-                type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" 
-            });
+            shareWaQRBtn.innerText = "Sharing...";
 
-            if (navigator.canShare && navigator.canShare({ files: [file] })) {
-                try {
+            try {
+                const excelData = qrDataList.map(e => ({
+                    "QR Data": e.data, "Date & Time": e.time
+                }));
+
+                const ws = XLSX.utils.json_to_sheet(excelData);
+                const wb = XLSX.utils.book_new();
+                XLSX.utils.book_append_sheet(wb, ws, "QR Data");
+                
+                const wbout = XLSX.write(wb, { bookType: 'xlsx', type: 'array' });
+                const file = new File([wbout], "SagarQR_Data.xlsx", { 
+                    type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" 
+                });
+
+                if (navigator.canShare && navigator.canShare({ files: [file] })) {
                     await navigator.share({
                         files: [file],
                         title: 'Sagar QR Data',
                         text: 'Scanned QR Data ki Excel file.'
                     });
-                } catch (err) {
-                    console.log("Share error:", err);
+                } else {
+                    alert("Aapka browser file share support nahi karta, QR ka data Text mein bhej rahe hain.");
+                    let textData = "Scanned QR Codes:\n\n";
+                    qrDataList.forEach(e => textData += `${e.data}\n`);
+                    let waUrl = `https://wa.me/?text=${encodeURIComponent(textData)}`;
+                    window.location.href = waUrl;
                 }
-            } else {
-                let textData = "Scanned QR Codes:\n\n";
-                qrDataList.forEach(e => textData += `${e.data}\n`);
-                let waUrl = `https://wa.me/?text=${encodeURIComponent(textData)}`;
-                window.open(waUrl, '_blank');
+            } catch (err) {
+                console.log("Share cancel hua ya error:", err);
+            } finally {
+                shareWaQRBtn.innerText = "Share QR on WhatsApp 🟢";
             }
         };
+    } else {
+        console.log("shareWaQRBtn HTML mein nahi mila!");
     }
-});
+
