@@ -223,7 +223,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
 
     // ==========================================
-    // 3. TABLE UPDATE & SUBMIT LOGIC (NO CHANGES HERE)
+    // 3. TABLE UPDATE & SUBMIT LOGIC 
     // ==========================================
     function updateTable() {
         const table = document.getElementById("table");
@@ -266,7 +266,7 @@ document.addEventListener("DOMContentLoaded", () => {
     updateTable();
 
     // ==========================================
-    // 4. COPY & EXPORT CSV (Barcode) (NO CHANGES HERE)
+    // 4. COPY & EXPORT CSV (Barcode) 
     // ==========================================
     document.getElementById("copyBtn").onclick = () => {
         if (barcodeData.length === 0) return alert("No data to copy!");
@@ -290,7 +290,7 @@ document.addEventListener("DOMContentLoaded", () => {
     };
 
     // ==========================================
-    // 5. GOOGLE SHEET SYNC LOGIC (NO CHANGES HERE)
+    // 5. GOOGLE SHEET SYNC LOGIC 
     // ==========================================
     document.getElementById("syncBtn").onclick = async () => {
         const unsyncedData = barcodeData.filter(e => !e.synced);
@@ -319,7 +319,7 @@ document.addEventListener("DOMContentLoaded", () => {
     };
 
     // ==========================================
-    // 6. COPY & EXPORT CSV (QR) (NO CHANGES HERE)
+    // 6. COPY & EXPORT CSV (QR) 
     // ==========================================
     document.getElementById("copyQR").onclick = () => {
         if (qrDataList.length === 0) return alert("No QR data to copy!");
@@ -337,4 +337,70 @@ document.addEventListener("DOMContentLoaded", () => {
         a.download = "SagarQR_Data.csv";
         a.click();
     };
+
+    // ==========================================
+    // 7. WHATSAPP SHARE LOGIC
+    // ==========================================
+    
+    // Barcode WhatsApp Share
+    const shareWaBtn = document.getElementById("shareWaBtn");
+    if(shareWaBtn) {
+        shareWaBtn.onclick = async () => {
+            if (barcodeData.length === 0) return alert("Bhai, share karne ke liye koi data nahi hai!");
+            
+            let csv = "Serial,Photo,Remark,Date & Time,Status\n";
+            barcodeData.forEach(e => {
+                csv += `"${e.module}","${e.image}","${e.remark}","${e.datetime}","${e.synced ? 'Synced' : 'Pending'}"\n`;
+            });
+
+            const file = new File([csv], "SagarBarcode_Data.csv", { type: "text/csv" });
+
+            if (navigator.canShare && navigator.canShare({ files: [file] })) {
+                try {
+                    await navigator.share({
+                        files: [file],
+                        title: 'SagarBarcode Data',
+                        text: 'Scanned Barcode Data ki Excel (CSV) file.'
+                    });
+                } catch (err) {
+                    console.log("Share cancel ho gaya:", err);
+                }
+            } else {
+                let textData = "Scanned Barcodes:\n\n";
+                barcodeData.forEach(e => textData += `${e.module} (Photo: ${e.image})\n`);
+                let waUrl = `https://wa.me/?text=${encodeURIComponent(textData)}`;
+                window.open(waUrl, '_blank');
+            }
+        };
+    }
+
+    // QR WhatsApp Share
+    const shareWaQRBtn = document.getElementById("shareWaQRBtn");
+    if(shareWaQRBtn) {
+        shareWaQRBtn.onclick = async () => {
+            if (qrDataList.length === 0) return alert("Share karne ke liye koi QR data nahi hai!");
+            
+            let csv = "QR Data,Date & Time\n";
+            qrDataList.forEach(e => csv += `"${e.data}","${e.time}"\n`);
+
+            const file = new File([csv], "SagarQR_Data.csv", { type: "text/csv" });
+
+            if (navigator.canShare && navigator.canShare({ files: [file] })) {
+                try {
+                    await navigator.share({
+                        files: [file],
+                        title: 'Sagar QR Data',
+                        text: 'Scanned QR Data ki file.'
+                    });
+                } catch (err) {
+                    console.log("Share error:", err);
+                }
+            } else {
+                let textData = "Scanned QR Codes:\n\n";
+                qrDataList.forEach(e => textData += `${e.data}\n`);
+                let waUrl = `https://wa.me/?text=${encodeURIComponent(textData)}`;
+                window.open(waUrl, '_blank');
+            }
+        };
+    }
 });
