@@ -375,13 +375,13 @@ document.addEventListener("DOMContentLoaded", () => {
                 });
 
                 // Check agar phone File Share support karta hai
-                if (navigator.canShare && navigator.canShare({ files: [file] })) {
-                    await navigator.share({
-                        files: [file],
-                        title: 'SagarBarcode Data',
-                        text: 'Scanned Barcode Data ki Excel file.'
-                    });
-                } else {
+                if (navigator.share) {
+    await navigator.share({
+        files: [file],
+        title: 'SagarBarcode Data',
+        text: 'Scanned Barcode Data ki Excel file.'
+    });
+} else {
                     // Agar phone file share support nahi karta, toh direct message WhatsApp par bhejega
                     alert("Aapka browser file share support nahi karta, Excel ka data Text mein bhej rahe hain.");
                     let textData = "Scanned Barcodes:\n\n";
@@ -392,8 +392,9 @@ document.addEventListener("DOMContentLoaded", () => {
                     window.location.href = waUrl; 
                 }
             } catch (err) {
-                console.log("Share cancel hua ya error:", err);
-            } finally {
+    alert("Share Error: " + err.message);
+    console.error(err);
+} finally {
                 shareWaBtn.innerText = "Share on WhatsApp 🟢"; // Button name wapas normal karna
             }
         };
@@ -424,13 +425,13 @@ document.addEventListener("DOMContentLoaded", () => {
                     type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" 
                 });
 
-                if (navigator.canShare && navigator.canShare({ files: [file] })) {
-                    await navigator.share({
-                        files: [file],
-                        title: 'Sagar QR Data',
-                        text: 'Scanned QR Data ki Excel file.'
-                    });
-                } else {
+                if (navigator.share) {
+    await navigator.share({
+        files: [file],
+        title: 'Sagar QR Data',
+        text: 'Scanned QR Data ki Excel file.'
+    });
+} else {
                     alert("Aapka browser file share support nahi karta, QR ka data Text mein bhej rahe hain.");
                     let textData = "Scanned QR Codes:\n\n";
                     qrDataList.forEach(e => textData += `${e.data}\n`);
@@ -438,8 +439,9 @@ document.addEventListener("DOMContentLoaded", () => {
                     window.location.href = waUrl;
                 }
             } catch (err) {
-                console.log("Share cancel hua ya error:", err);
-            } finally {
+    alert("Share Error: " + err.message);
+    console.error(err);
+} finally {
                 shareWaQRBtn.innerText = "Share QR on WhatsApp 🟢";
             }
         };
