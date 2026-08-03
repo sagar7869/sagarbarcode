@@ -350,12 +350,6 @@ document.addEventListener("DOMContentLoaded", () => {
     // ==========================================
     
     // Barcode WhatsApp Share
-  
-});    // ==========================================
-    // 7. WHATSAPP SHARE LOGIC (EXCEL .xlsx)
-    // ==========================================
-    
-    // Barcode WhatsApp Share
     const shareWaBtn = document.getElementById("shareWaBtn");
     if(shareWaBtn) {
         shareWaBtn.onclick = async () => {
@@ -453,3 +447,4 @@ document.addEventListener("DOMContentLoaded", () => {
         console.log("shareWaQRBtn HTML mein nahi mila!");
     }
 
+}); // <-- YEH WALA BRACKET SABSE END MEIN HONA CHAHIYE THA, AB SAHI HAI!
