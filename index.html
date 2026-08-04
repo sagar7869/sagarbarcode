@@ -142,5 +142,21 @@
 <footer>Design by – Sagar Herole</footer>
 
 <script src="app.js"></script>
+  <script>
+  // Yeh check karta hai ki aapka browser Service Worker ko support karta hai ya nahi
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+      // Yahan hum aapki sw.js file ko link kar rahe hain
+      navigator.serviceWorker.register('./sw.js')
+        .then((registration) => {
+          console.log('Service Worker ekdum perfect lag gaya!', registration.scope);
+        })
+        .catch((error) => {
+          console.log('Service Worker mein error aaya:', error);
+        });
+    });
+  }
+  </script>
+  
 </body>
 </html>
