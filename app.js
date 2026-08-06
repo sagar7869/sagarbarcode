@@ -207,7 +207,7 @@ document.addEventListener("DOMContentLoaded", () => {
                         
                         let code = barcodes[0].rawValue;
                         document.getElementById("qrField").value = code;
-                        
+                        qrDataList = [];
                         qrDataList.push({ data: code, time: new Date().toLocaleString('en-GB') });
                         localStorage.setItem("qrDataList", JSON.stringify(qrDataList));
                         alert("QR Scanned Successfully!");
@@ -321,13 +321,19 @@ document.addEventListener("DOMContentLoaded", () => {
     // ==========================================
     // 6. COPY & EXPORT CSV (QR) 
     // ==========================================
+        // ==========================================
+    // 6. COPY & EXPORT CSV (QR) 
+    // ==========================================
     document.getElementById("copyQR").onclick = () => {
         if (qrDataList.length === 0) return alert("No QR data to copy!");
         let text = "QR Data\tDate & Time\n";
         qrDataList.forEach(e => text += `${e.data}\t${e.time}\n`);
-        navigator.clipboard.writeText(text).then(() => alert("Copied!")).catch(err => alert("Failed: " + err));
+        
+        navigator.clipboard.writeText(text)
+            .then(() => alert("Copied!"))
+            .catch(err => alert("Failed: " + err));
     };
-
+    
     document.getElementById("exportQR").onclick = () => {
         if (qrDataList.length === 0) return alert("No QR data to export!");
         let csv = "QR Data,Date & Time\n";
