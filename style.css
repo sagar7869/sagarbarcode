@@ -29,6 +29,24 @@ button { width: 100%; padding: 12px; margin: 5px 0; border-radius: 12px; border:
 #exportBtn, #exportQR { background: #673ab7; color: white; } 
 #submitBtn { background: #4caf50; color: white; }
 
+/* Clear All Button Style */
+.clear-btn {
+  background: #dc3545 !important;
+  color: white !important;
+  border-radius: 12px;
+  box-shadow: 0 4px 6px rgba(220, 53, 69, 0.2);
+  transition: background-color 0.2s ease, transform 0.1s ease;
+}
+
+.clear-btn:hover {
+  background: #bb2d3b !important;
+  transform: translateY(-1px);
+}
+
+.clear-btn:active {
+  transform: translateY(0);
+}
+
 .table-wrapper { overflow-x: auto; margin-top: 20px; padding: 10px; }
 #table { width: 100%; border-collapse: collapse; background: white; }
 #table th { 
@@ -63,9 +81,9 @@ input, textarea { width: 100%; padding: 12px; margin: 8px 0; border: 1px solid #
 /* ======================================================== */
 #scannerOverlay {
   position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
-  background: transparent; /* YAHAN GALTI THI, ab background transparent hai */
+  background: transparent;
   z-index: 99999;
-  display: flex; flex-direction: column; align-items: center; justify-content: space-between;
+  display: flex; flex-direction: column; align-items: center; justify-space-between;
   padding: 20px 0 40px 0; box-sizing: border-box;
   pointer-events: none; /* Screen par touch pass hone ke liye */
 }
