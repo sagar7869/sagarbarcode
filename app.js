@@ -266,6 +266,34 @@ document.addEventListener("DOMContentLoaded", () => {
     updateTable();
 
     // ==========================================
+    // 3.1 CLEAR ALL FUNCTIONS (BARCODE & QR)
+    // ==========================================
+    window.clearBarcodeData = () => {
+        if (barcodeData.length === 0) return alert("Pehle se hi table empty hai!");
+        
+        if (confirm("Kya aap poora Barcode Table aur Local Storage clear karna chahte hain?")) {
+            barcodeData = [];
+            localStorage.removeItem("barcodeData");
+            updateTable();
+            alert("Barcode data successfully clear ho gaya!");
+        }
+    };
+
+    window.clearQRData = () => {
+        if (qrDataList.length === 0 && !document.getElementById("qrField").value) {
+            return alert("Pehle se hi QR data empty hai!");
+        }
+        
+        if (confirm("Kya aap QR Code Data aur Local Storage clear karna chahte hain?")) {
+            qrDataList = [];
+            localStorage.removeItem("qrDataList");
+            const qrField = document.getElementById("qrField");
+            if (qrField) qrField.value = "";
+            alert("QR data successfully clear ho gaya!");
+        }
+    };
+
+    // ==========================================
     // 4. COPY & EXPORT CSV (Barcode) 
     // ==========================================
     document.getElementById("copyBtn").onclick = () => {
@@ -319,9 +347,6 @@ document.addEventListener("DOMContentLoaded", () => {
     };
 
     // ==========================================
-    // 6. COPY & EXPORT CSV (QR) 
-    // ==========================================
-        // ==========================================
     // 6. COPY & EXPORT CSV (QR) 
     // ==========================================
     document.getElementById("copyQR").onclick = () => {
