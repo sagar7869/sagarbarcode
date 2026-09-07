@@ -15,9 +15,8 @@
 </script>
   
 <link rel="stylesheet" href="style.css">
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
   
-<!-- Purani scan library hata di gayi hai taaki Native HD API use ho sake -->
 </head>
 
 <body>
@@ -38,7 +37,6 @@
   </div>
 
   <div class="card">
-    <!-- Hidden elements (purane wale chhod diye hain taaki design disturb na ho) -->
     <div id="reader" style="display:none;"></div>
     
     <button id="startScan" autofocus>Start Scan</button>
@@ -69,6 +67,8 @@
   <button id="exportBtn">Export CSV</button>
   <button id="shareWaBtn" style="background: #25D366; color: white;">Share on WhatsApp 🟢</button>
   <button id="syncBtn">Update Google Sheet</button>
+  <!-- Barcode Clear All Button -->
+  <button id="clearAllBtn" class="clear-btn" onclick="clearBarcodeData()">🗑️ Clear All Barcode Data</button>
 </section>
 
 <section id="qrTab" class="tabSection">
@@ -84,29 +84,24 @@
   <button id="copyQR">Copy QR Data</button>
   <button id="exportQR">Export QR CSV</button>
   <button id="shareWaQRBtn" style="background: #25D366; color: white;">Share QR on WhatsApp 🟢</button>
+  <!-- QR Code Clear All Button -->
+  <button id="clearQRBtn" class="clear-btn" onclick="clearQRData()">🗑️ Clear QR Data</button>
 </section>
 
-<!-- ============================================== -->
-<!-- CAMERA PREVIEW (Peeche chalne wala asli HD camera) -->
-<!-- ============================================== -->
+<!-- CAMERA PREVIEW -->
 <div id="cameraContainer" class="hidden">
     <video id="nativeVideo" autoplay playsinline></video>
 </div>
 
-<!-- ============================================== -->
-<!-- PREMIUM NATIVE SCANNER OVERLAY (Aapki Image Jaisa) -->
-<!-- ============================================== -->
+<!-- PREMIUM NATIVE SCANNER OVERLAY -->
 <div id="scannerOverlay" class="hidden">
-  <!-- Top Navigation Bar -->
   <div class="top-nav">
     <button id="closeScannerBtn">❮</button>
     <button id="helpBtn">?</button>
   </div>
 
-  <!-- Instruction Text -->
   <div class="instruction-text">Put the code into the frame.</div>
 
-  <!-- Square Scanning Frame with Corners & Laser -->
   <div class="scan-frame">
     <div class="corner tl"></div>
     <div class="corner tr"></div>
@@ -115,14 +110,12 @@
     <div class="laser"></div>
   </div>
 
-  <!-- Vertical Zoom Slider (Right Side) -->
   <div class="zoom-container">
     <span class="zoom-icon">⊕</span>
     <input type="range" id="zoomSlider" min="1" max="3" step="0.1" value="1">
     <span class="zoom-icon">⊖</span>
   </div>
 
-  <!-- Bottom Glassmorphism Bar (Flashlight, etc.) -->
   <div class="bottom-bar">
     <div class="nav-item">
       <span class="icon">🖼️</span>
@@ -142,11 +135,9 @@
 <footer>Design by – Sagar Hirole</footer>
 
 <script src="app.js"></script>
-  <script>
-  // Yeh check karta hai ki aapka browser Service Worker ko support karta hai ya nahi
+<script>
   if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
-      // Yahan hum aapki sw.js file ko link kar rahe hain
       navigator.serviceWorker.register('./sw.js')
         .then((registration) => {
           console.log('Service Worker ekdum perfect lag gaya!', registration.scope);
@@ -156,7 +147,7 @@
         });
     });
   }
-  </script>
+</script>
   
 </body>
 </html>
