@@ -1,8 +1,8 @@
 const WEBAPP_URL = "https://script.google.com/macros/s/AKfycbybuMNHEyOEtOzLICttGMC_aVj6gO3pfeCQ4Tj9KJF1TFfmp71TqzJXgGcsG5wS2w48/exec";
 
 document.addEventListener("DOMContentLoaded", () => {
-    let barcodeData = JSON.parse(localStorage.getItem("barcodeData") || "[]");
-    let qrDataList = JSON.parse(localStorage.getItem("qrDataList") || "[]");
+    let barcodeData = JSON.parse(localStorage.getItem("barcodeData") || "[]")[cite: 2];
+    let qrDataList = JSON.parse(localStorage.getItem("qrDataList") || "[]")[cite: 2];
     let audioCtx = null;
     
     // Naye HD Camera ke variables
@@ -155,11 +155,23 @@ document.addEventListener("DOMContentLoaded", () => {
                 try {
                     const barcodes = await barcodeDetector.detect(videoElem);
                     if (barcodes.length > 0 && barcodes[0].rawValue.trim() !== "") {
+                        let scannedCode = barcodes[0].rawValue.trim();
+                        
+                        // DUPLICATE CHECK: Check karein ki kya ye barcode pehle se barcodeData mein hai
+                        let isDuplicate = barcodeData.some(item => item.module.trim() === scannedCode);
+                        
+                        if (isDuplicate) {
+                            playBeep();
+                            await closeOverlay();
+                            alert(`⚠️ Duplicate Entry! Barcode "${scannedCode}" pehle se table mein available hai.`);
+                            return;
+                        }
+
                         playBeep();
                         await closeOverlay();
                         
                         entryFields.style.display = "block";
-                        document.getElementById("barcode").value = barcodes[0].rawValue;
+                        document.getElementById("barcode").value = scannedCode;
                         document.getElementById("datetime").value = new Date().toLocaleString('en-GB');
                     }
                 } catch (e) {}
@@ -236,8 +248,16 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     document.getElementById("submitBtn").onclick = () => {
+        const moduleVal = document.getElementById("barcode").value.trim();
+        
+        // Submit karte waqt bhi double protection ke liye duplicate check
+        if (barcodeData.some(item => item.module.trim() === moduleVal)) {
+            alert("⚠️ Yeh Barcode pehle se table mein maujood hai!");
+            return;
+        }
+
         const entry = {
-            module: document.getElementById("barcode").value,
+            module: moduleVal,
             image: document.getElementById("photo").value,
             remark: document.getElementById("remark").value,
             datetime: document.getElementById("datetime").value,
